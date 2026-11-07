@@ -1,3 +1,5 @@
+"use client";
+
 import { ShimmerButton } from "./shimmer-button";
 import "./NoisyShimmerButton.css";
 

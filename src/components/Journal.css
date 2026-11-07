@@ -90,3 +90,51 @@
   border-color: transparent;
   color: white;
 }
+
+/* Empty state: same pill language as the entries, themed for dark + light */
+.journal-empty {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px dashed var(--stroke);
+  border-radius: 40px;
+  background: rgba(20, 20, 20, 0.3);
+}
+.light .journal-empty {
+  background: var(--surface);
+}
+.journal-empty-dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(27, 204, 254, 0.12);
+  animation: journal-empty-pulse 2.4s ease-in-out infinite;
+}
+.journal-empty-title {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.journal-empty-sub {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+@keyframes journal-empty-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(27, 204, 254, 0.16); }
+  50% { box-shadow: 0 0 0 9px rgba(27, 204, 254, 0.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal-empty-dot {
+    animation: none;
+  }
+}
+@media (max-width: 640px) {
+  .journal-empty {
+    border-radius: 1.5rem;
+    padding: 1.1rem 1.2rem;
+  }
+}

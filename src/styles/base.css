@@ -204,3 +204,27 @@ body {
   height: 1px;
   background: var(--stroke);
 }
+
+/* Post without a cover image (thumbnails in lists / prev-next cards) */
+.cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(27, 204, 254, 0.35), transparent 60%),
+    linear-gradient(135deg, #12202b 0%, #0d1117 100%);
+  color: #e5e5e5;
+  font-family: var(--font-title);
+  font-size: 1.4em;
+  font-weight: 500;
+  line-height: 1;
+  user-select: none;
+}
+.light .cover-fallback {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(10, 159, 203, 0.28), transparent 60%),
+    linear-gradient(135deg, #e8f4f8 0%, #dfe6ea 100%);
+  color: #2d2d2d;
+}

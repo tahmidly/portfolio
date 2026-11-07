@@ -1,9 +1,11 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
 import "./BackCircle.css";
 
 export default function BackCircle({ to, label }) {
   return (
-    <Link to={to} className="back-circle" aria-label={label}>
+    <Link href={to} className="back-circle" aria-label={label}>
       <svg
         width="16"
         height="16"

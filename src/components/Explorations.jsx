@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { gsap } from "../lib/gsap";
 import { galleryItems } from "../data/portfolio";

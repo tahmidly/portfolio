@@ -1,5 +1,8 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { ScrollTrigger } from "../lib/gsap";
 import { navLinks } from "../data/portfolio";
 import "./Navbar.css";
@@ -7,8 +10,8 @@ import "./Navbar.css";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("hero");
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 100);
@@ -45,12 +48,12 @@ export default function Navbar() {
       worksTrigger?.kill();
       journalTrigger?.kill();
     };
-  }, [location.pathname]);
+  }, [pathname]);
 
   const handleNavClick = (sectionId) => {
     setActive(sectionId);
-    if (location.pathname !== "/") {
-      navigate(sectionId === "hero" ? "/" : `/#${sectionId}`);
+    if (pathname !== "/") {
+      router.push(sectionId === "hero" ? "/" : `/#${sectionId}`);
       return;
     }
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
@@ -59,7 +62,7 @@ export default function Navbar() {
   return (
     <nav
       className={`navbar${
-        location.pathname.startsWith("/blogs") ? " navbar--static" : ""
+        pathname.startsWith("/blogs") ? " navbar--static" : ""
       }`}
       id="navbar"
     >
@@ -77,7 +80,7 @@ export default function Navbar() {
             key={link.id}
             type="button"
             className={`nav-link${
-              location.pathname === "/" && active === link.id ? " active" : ""
+              pathname === "/" && active === link.id ? " active" : ""
             }`}
             data-section={link.id}
             onClick={() => handleNavClick(link.id)}
@@ -86,9 +89,9 @@ export default function Navbar() {
           </button>
         ))}
         <Link
-          to="/blogs"
+          href="/blogs"
           className={`nav-link${
-            location.pathname.startsWith("/blogs") ? " active" : ""
+            pathname.startsWith("/blogs") ? " active" : ""
           }`}
         >
           Blogs

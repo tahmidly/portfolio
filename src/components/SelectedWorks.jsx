@@ -1,3 +1,5 @@
+"use client";
+
 import SectionHeader from "./SectionHeader";
 import Reveal from "./Reveal";
 import { works } from "../data/portfolio";

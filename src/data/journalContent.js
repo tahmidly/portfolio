@@ -1,3 +1,5 @@
+// LEGACY: the blog now reads from the database. This file is only used by
+// scripts/seed.mjs to seed the original 4 posts. Safe to delete once seeded.
 export const journalContent = {
   "negative-space": {
     excerpt:
