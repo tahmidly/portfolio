@@ -44,6 +44,7 @@ export const works = [
   },
 ];
 
+// LEGACY: blog posts now live in the database; only scripts/seed.mjs reads this.
 export const journalEntries = [
   {
     id: "negative-space",

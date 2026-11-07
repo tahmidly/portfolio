@@ -5,3 +5,8 @@ dist-ssr
 .DS_Store
 .next
 next-env.d.ts
+
+# env & local data
+.env
+.env*.local
+/storage
