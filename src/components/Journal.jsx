@@ -1,9 +1,12 @@
+import { Link, useNavigate } from "react-router-dom";
 import SectionHeader from "./SectionHeader";
 import Reveal from "./Reveal";
 import { journalEntries } from "../data/portfolio";
 import "./Journal.css";
 
 export default function Journal() {
+  const navigate = useNavigate();
+
   return (
     <section className="journal" id="journal">
       <div className="journal-inner">
@@ -17,13 +20,15 @@ export default function Journal() {
           subtitle="Perspectives on design, technology, and the craft of building things."
           action="View all →"
           actionVariant="shimmer"
+          actionOnClick={() => navigate("/blogs")}
         />
 
         <div className="journal-list">
           {journalEntries.map((entry) => (
             <Reveal
-              as="a"
+              as={Link}
               key={entry.id}
+              to={`/blogs/${entry.id}`}
               className="journal-entry"
               aria-label={entry.title}
             >

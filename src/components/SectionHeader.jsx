@@ -8,6 +8,7 @@ export default function SectionHeader({
   subtitle,
   action,
   actionVariant = "default",
+  actionOnClick,
 }) {
   return (
     <Reveal className="section-header" start="top 85%">
@@ -23,7 +24,7 @@ export default function SectionHeader({
         {action ? (
           actionVariant === "shimmer" ? (
             <div className="section-header-action">
-              <NoisyShimmerButton type="button">
+              <NoisyShimmerButton type="button" onClick={actionOnClick}>
                 <span className="text-sm font-medium tracking-tight text-white whitespace-nowrap">
                   {action}
                 </span>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ScrollTrigger } from "../lib/gsap";
 import { navLinks } from "../data/portfolio";
 import "./Navbar.css";
@@ -6,6 +7,8 @@ import "./Navbar.css";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("hero");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 100);
@@ -42,15 +45,24 @@ export default function Navbar() {
       worksTrigger?.kill();
       journalTrigger?.kill();
     };
-  }, []);
+  }, [location.pathname]);
 
   const handleNavClick = (sectionId) => {
     setActive(sectionId);
+    if (location.pathname !== "/") {
+      navigate(sectionId === "hero" ? "/" : `/#${sectionId}`);
+      return;
+    }
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <nav className="navbar" id="navbar">
+    <nav
+      className={`navbar${
+        location.pathname.startsWith("/blogs") ? " navbar--static" : ""
+      }`}
+      id="navbar"
+    >
       <div className={`nav-pill${scrolled ? " scrolled" : ""}`}>
         <div className="nav-logo" aria-label="Meer Tahmid">
           <img
@@ -64,13 +76,23 @@ export default function Navbar() {
           <button
             key={link.id}
             type="button"
-            className={`nav-link${active === link.id ? " active" : ""}`}
+            className={`nav-link${
+              location.pathname === "/" && active === link.id ? " active" : ""
+            }`}
             data-section={link.id}
             onClick={() => handleNavClick(link.id)}
           >
             {link.label}
           </button>
         ))}
+        <Link
+          to="/blogs"
+          className={`nav-link${
+            location.pathname.startsWith("/blogs") ? " active" : ""
+          }`}
+        >
+          Blogs
+        </Link>
         <div className="nav-divider" />
         <div className="nav-sayhi">
           <div className="nav-sayhi-bg" />

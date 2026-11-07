@@ -10,6 +10,9 @@
   padding-left: 1rem;
   padding-right: 1rem;
 }
+.navbar--static {
+  position: absolute;
+}
 
 .nav-pill {
   display: inline-flex;
@@ -110,11 +113,24 @@
   border: none;
   font-family: var(--font-body);
   white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 .nav-link:hover,
 .nav-link.active {
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
+}
+.light .nav-link:hover,
+.light .nav-link.active {
+  background: rgba(0, 0, 0, 0.05);
+}
+.light .nav-pill {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .nav-pill.scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .nav-sayhi {

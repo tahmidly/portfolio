@@ -1,10 +1,6 @@
 export const roles = ["Creative", "Fullstack", "Founder", "Scholar"];
 
-export const navLinks = [
-  { id: "hero", label: "Home" },
-  { id: "works", label: "Work" },
-  { id: "journal", label: "Resume" },
-];
+export const navLinks = [{ id: "hero", label: "Home" }];
 
 export const works = [
   {
