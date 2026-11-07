@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NextLink from "next/link";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -11,11 +12,13 @@ import {
   ArrowLeft,
   Bold,
   Code,
+  Eye,
   Image as ImageIcon,
   Italic,
   Link as LinkIcon,
   List,
   ListOrdered,
+  LogOut,
   Pencil,
   Plus,
   Redo2,
@@ -24,20 +27,32 @@ import {
   Underline as UnderlineIcon,
   Undo2,
 } from "lucide-react";
-import { journalEntries } from "../data/portfolio";
-import { journalContent } from "../data/journalContent";
 import ThemeToggle from "../components/ThemeToggle";
+import CoverCropper from "../components/CoverCropper";
+import {
+  EMPTY_DOC,
+  HIGHLIGHTS,
+  estimateReadingTime,
+  formatPostDate,
+  slugify,
+} from "../lib/content";
+import {
+  createPostAction,
+  deletePostAction,
+  getPostAction,
+  listPostsAction,
+  publishPostAction,
+  savePostAction,
+  unpublishPostAction,
+} from "../app/admin/actions";
+import { confirmDanger, promptLink, showError, showToast } from "../lib/dialogs";
 import "./AdminPage.css";
 
-const STORAGE_KEY = "mt_admin_posts_v1";
 const THEME_KEY = "admin-theme";
-
-const HIGHLIGHTS = [
-  { name: "Cyan", color: "rgba(27, 204, 254, 0.25)" },
-  { name: "Yellow", color: "rgba(250, 204, 21, 0.28)" },
-  { name: "Pink", color: "rgba(244, 114, 182, 0.26)" },
-  { name: "Gray", color: "rgba(163, 163, 163, 0.22)" },
-];
+const AUTOSAVE_MS = 600;
+// Originals can be large; the cropper resizes and compresses below the 4 MB upload limit.
+const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
+const UPLOAD_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const TextSize = Mark.create({
   name: "textSize",
@@ -59,68 +74,47 @@ const TextSize = Mark.create({
   },
 });
 
-function textNode(text) {
-  return text ? [{ type: "text", text }] : [];
+function saveLabel(state) {
+  if (state === "saving") return "Saving…";
+  if (state === "saved") return "Saved";
+  if (state === "error") return "Save failed";
+  return "All changes saved";
 }
 
-function blocksToDoc(blocks = []) {
-  const content = blocks.map((block) => {
-    if (block.type === "h2") {
-      return {
-        type: "heading",
-        attrs: { level: 2 },
-        content: textNode(block.text),
-      };
-    }
-    return {
-      type: "paragraph",
-      content: textNode(block.text),
-    };
-  });
+function goToLogin() {
+  window.location.assign("/admin/login");
+}
 
+/** Editable fields sent on every autosave (full state, not patches). */
+function editableFields(post) {
   return {
-    type: "doc",
-    content: content.length ? content : [{ type: "paragraph" }],
+    title: post.title,
+    excerpt: post.excerpt,
+    slug: post.slug,
+    // ProseMirror attrs are null-prototype objects, which server actions can't
+    // serialize as plain data — send a plain JSON copy.
+    content: JSON.parse(JSON.stringify(post.content)),
+    coverUrl: post.coverUrl,
+    coverWidth: post.coverWidth ?? null,
+    coverHeight: post.coverHeight ?? null,
+    readingTime: post.readingTime,
   };
 }
 
-function makeSeedPosts() {
-  return journalEntries.map((entry) => ({
-    id: entry.id,
-    slug: entry.id,
-    title: entry.title,
-    excerpt: journalContent[entry.id]?.excerpt || "",
-    cover: entry.image,
-    alt: entry.alt,
-    placeholder: entry.placeholder,
-    content: blocksToDoc(journalContent[entry.id]?.content),
-    status: "published",
-    date: entry.date,
-    readTime: entry.readTime,
-  }));
+/** Blank read time = "auto" (server estimates it from the body). */
+function toEditable(post) {
+  const content = post.content || EMPTY_DOC;
+  return {
+    ...post,
+    content,
+    readingTime:
+      post.readingTime === estimateReadingTime(content) ? "" : post.readingTime,
+  };
 }
 
-function slugify(value) {
-  return String(value)
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function todayLabel() {
-  return new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function saveLabel(state) {
-  if (state === "saving") return "Saving…";
-  if (state === "saved") return "Saved locally";
-  if (state === "error") return "Save failed";
-  return "Local draft";
+function summaryOf(post) {
+  const { content: _content, ...rest } = post;
+  return rest;
 }
 
 function ToolButton({ active = false, onClick, label, children, disabled }) {
@@ -138,7 +132,30 @@ function ToolButton({ active = false, onClick, label, children, disabled }) {
   );
 }
 
-function Dashboard({ posts, loaded, onCreate, onEdit, onDelete }) {
+function ErrorBanner({ message, list, onDismiss }) {
+  if (!message && !list?.length) return null;
+  return (
+    <div className="admin-error-banner" role="alert">
+      <div>
+        {message}
+        {list?.length ? (
+          <ul>
+            {list.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+      {onDismiss ? (
+        <button type="button" onClick={onDismiss} aria-label="Dismiss">
+          ×
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function Dashboard({ posts, loading, error, onRetry, onCreate, onEdit, onDelete, creating }) {
   return (
     <div className="admin-dashboard">
       <header className="admin-topbar">
@@ -146,16 +163,28 @@ function Dashboard({ posts, loaded, onCreate, onEdit, onDelete }) {
           <p className="admin-eyebrow">Content studio</p>
           <h1>Blog posts</h1>
           <p className="admin-sub">
-            Create, edit and remove posts. Typography stays locked to the site.
+            Create, edit and publish posts. Typography stays locked to the site.
           </p>
         </div>
-        <button type="button" className="admin-primary" onClick={onCreate}>
+        <button
+          type="button"
+          className="admin-primary"
+          onClick={onCreate}
+          disabled={creating}
+        >
           <Plus size={16} />
-          New post
+          {creating ? "Creating…" : "New post"}
         </button>
       </header>
 
-      {!loaded ? (
+      {error ? (
+        <div className="admin-empty">
+          <p>{error}</p>
+          <button type="button" className="admin-secondary" onClick={onRetry}>
+            Try again
+          </button>
+        </div>
+      ) : loading ? (
         <div className="admin-loading">Loading posts…</div>
       ) : posts.length === 0 ? (
         <div className="admin-empty">
@@ -175,9 +204,9 @@ function Dashboard({ posts, loaded, onCreate, onEdit, onDelete }) {
           {posts.map((post) => (
             <article className="admin-post-row" key={post.id}>
               <div className="admin-post-main">
-                <div className={`admin-post-thumb ${post.placeholder || ""}`}>
-                  {post.cover ? (
-                    <img src={post.cover} alt={post.alt || ""} />
+                <div className="admin-post-thumb">
+                  {post.coverUrl ? (
+                    <img src={post.coverUrl} alt={post.coverAlt || ""} />
                   ) : (
                     <div className="admin-post-thumb-empty">
                       <ImageIcon size={18} />
@@ -203,8 +232,8 @@ function Dashboard({ posts, loaded, onCreate, onEdit, onDelete }) {
               </div>
 
               <div className="admin-post-date">
-                <span>{post.date}</span>
-                <small>{post.readTime}</small>
+                <span>{formatPostDate(post.publishedAt || post.updatedAt)}</span>
+                <small>{post.readingTime}</small>
               </div>
 
               <div className="admin-post-actions">
@@ -219,7 +248,7 @@ function Dashboard({ posts, loaded, onCreate, onEdit, onDelete }) {
                 <button
                   type="button"
                   className="admin-danger"
-                  onClick={() => onDelete(post.id)}
+                  onClick={() => onDelete(post)}
                 >
                   <Trash2 size={14} />
                   Delete
@@ -230,15 +259,28 @@ function Dashboard({ posts, loaded, onCreate, onEdit, onDelete }) {
         </div>
       )}
 
-      <p className="admin-note">
-        Edits are saved in this browser for now. Publishing to the live site is
-        the next phase.
-      </p>
+      <form method="post" action="/api/auth/logout" className="admin-note">
+        Posts are stored in the database and published to /blogs instantly.{" "}
+        <button type="submit" className="admin-link-button admin-mobile-signout">
+          Sign out
+        </button>
+      </form>
     </div>
   );
 }
 
-function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
+function PostEditor({
+  post,
+  onChange,
+  onDelete,
+  onBack,
+  onCommit,
+  saveState,
+  publishing,
+  error,
+  errorList,
+  onDismissError,
+}) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -257,11 +299,7 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
       }),
       TextSize,
     ],
-    content:
-      post.content || {
-        type: "doc",
-        content: [{ type: "paragraph" }],
-      },
+    content: post.content || EMPTY_DOC,
     editorProps: {
       attributes: {
         class: "admin-tiptap",
@@ -301,6 +339,14 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
 
   const titleRef = useRef(null);
   const excerptRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  // Status field = what the action button will do; follows the saved status.
+  const [targetStatus, setTargetStatus] = useState(post.status);
+  useEffect(() => {
+    setTargetStatus(post.status);
+  }, [post.status]);
+  const [uploadError, setUploadError] = useState("");
+  const [cropSource, setCropSource] = useState(null);
 
   useEffect(() => {
     const element = titleRef.current;
@@ -347,39 +393,96 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
   }, [post.excerpt, editor]);
 
   const handleTitle = (value) => {
-    const nextSlug =
-      !post.slug || post.slug === "untitled"
-        ? slugify(value) || "untitled"
-        : post.slug;
-    onChange({ title: value, slug: nextSlug });
+    // Auto-derive the slug until the post has ever been public, as long as the
+    // slug still looks auto-generated.
+    const autoSlug =
+      !post.publishedAt &&
+      (!post.slug ||
+        post.slug.startsWith("untitled") ||
+        post.slug === slugify(post.title));
+    onChange({
+      title: value,
+      slug: autoSlug ? slugify(value) || post.slug : post.slug,
+    });
   };
 
+  // Picking a file opens the cropper; the cropped, resized result is uploaded.
   const handleCoverFile = (file) => {
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      window.alert("Keep the cover under 2 MB while drafts are stored locally.");
+    setUploadError("");
+    if (!UPLOAD_TYPES.includes(file.type)) {
+      setUploadError("Only JPEG, PNG or WebP images are allowed.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => onChange({ cover: String(reader.result) });
-    reader.readAsDataURL(file);
+    if (file.size > MAX_SOURCE_BYTES) {
+      setUploadError("Image is larger than 20 MB.");
+      return;
+    }
+    setCropSource({ file });
   };
 
-  const setLink = () => {
+  const uploadCover = async ({ blob, width, height }) => {
+    setUploading(true);
+    setUploadError("");
+    try {
+      const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : "jpg";
+      const body = new FormData();
+      body.append("file", new File([blob], `cover.${ext}`, { type: blob.type }));
+      const response = await fetch("/api/admin/upload", { method: "POST", body });
+      if (response.status === 401) return goToLogin();
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Upload failed.");
+      onChange({ coverUrl: result.url, coverWidth: width, coverHeight: height });
+      setCropSource(null);
+    } catch (uploadErr) {
+      // Surface the error inside the cropper so the user can retry.
+      throw new Error(uploadErr.message || "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const setLink = async () => {
     if (!editor) return;
-    const previous = editor.getAttributes("link").href || "https://";
-    const url = window.prompt("Link URL", previous);
-    if (url === null) return;
-    if (url.trim() === "") {
-      editor.chain().focus().unsetLink().run();
+    const previous = editor.getAttributes("link").href || "";
+    const url = await promptLink(previous);
+    if (url === null) {
+      editor.commands.focus();
       return;
     }
-    editor.chain().focus().setLink({ href: url.trim() }).run();
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
   if (!editor) {
     return <div className="admin-loading">Loading editor…</div>;
   }
+
+  const isPublished = post.status === "published";
+  const wantsPublished = targetStatus === "published";
+  const primaryLabel = publishing
+    ? wantsPublished
+      ? isPublished
+        ? "Updating…"
+        : "Publishing…"
+      : "Saving…"
+    : wantsPublished
+      ? isPublished
+        ? "Update post"
+        : "Publish"
+      : isPublished
+        ? "Unpublish & save draft"
+        : "Save draft";
+  const statusHint = wantsPublished
+    ? isPublished
+      ? "Live on /blogs — updates go out when you press Update."
+      : "Not live yet — press Publish to put it on /blogs."
+    : isPublished
+      ? "Currently live — saving as draft will take it off /blogs."
+      : "Draft — only you can see it.";
 
   return (
     <div className="admin-editor-page">
@@ -398,6 +501,8 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
           </button>
         </div>
       </header>
+
+      <ErrorBanner message={error} list={errorList} onDismiss={onDismissError} />
 
       <textarea
         ref={titleRef}
@@ -423,9 +528,9 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
         <label className="admin-field">
           <span>Status</span>
           <select
-            className="admin-select"
-            value={post.status}
-            onChange={(event) => onChange({ status: event.target.value })}
+            className={`admin-select admin-status-select ${targetStatus}`}
+            value={targetStatus}
+            onChange={(event) => setTargetStatus(event.target.value)}
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
@@ -436,7 +541,9 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
           <input
             className="admin-input"
             value={post.slug}
-            onChange={(event) => onChange({ slug: slugify(event.target.value) })}
+            onChange={(event) =>
+              onChange({ slug: slugify(event.target.value) })
+            }
             placeholder="post-slug"
           />
         </label>
@@ -444,31 +551,44 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
           <span>Read time</span>
           <input
             className="admin-input"
-            value={post.readTime}
-            onChange={(event) => onChange({ readTime: event.target.value })}
-            placeholder="6 min read"
+            value={post.readingTime}
+            onChange={(event) => onChange({ readingTime: event.target.value })}
+            placeholder={`Auto · ${estimateReadingTime(post.content)}`}
           />
         </label>
       </div>
 
       <div className="admin-cover">
         <label
-          className={`admin-cover-preview${
-            post.placeholder ? ` ${post.placeholder}` : ""
-          }`}
-          title={post.cover ? "Change cover image" : "Add a cover image"}
+          className={`admin-cover-preview${uploading ? " admin-cover-uploading" : ""}`}
+          style={
+            post.coverUrl && post.coverWidth && post.coverHeight
+              ? { aspectRatio: `${post.coverWidth} / ${post.coverHeight}` }
+              : undefined
+          }
+          title={post.coverUrl ? "Change cover image" : "Add a cover image"}
         >
-          {post.cover ? (
-            <img src={post.cover} alt={post.alt || "Post cover"} />
+          {post.coverUrl ? (
+            <img
+              src={post.coverUrl}
+              alt={post.coverAlt || "Post cover"}
+              onLoad={(event) => {
+                // Backfill size for covers uploaded before dimensions were stored.
+                const { naturalWidth, naturalHeight } = event.currentTarget;
+                if (!post.coverWidth && naturalWidth && naturalHeight) {
+                  onChange({ coverWidth: naturalWidth, coverHeight: naturalHeight });
+                }
+              }}
+            />
           ) : (
             <div className="admin-cover-empty">
               <ImageIcon size={22} />
-              <span>Add a cover image</span>
+              <span>{uploading ? "Uploading…" : "Add a cover image"}</span>
             </div>
           )}
           <input
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="admin-cover-input"
             onChange={(event) => {
               handleCoverFile(event.target.files?.[0]);
@@ -476,16 +596,52 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
             }}
           />
         </label>
-        {post.cover ? (
-          <button
-            type="button"
-            className="admin-cover-clear"
-            onClick={() => onChange({ cover: "" })}
-          >
-            Remove cover
-          </button>
+        {uploadError ? (
+          <p className="admin-login-error" role="alert">
+            {uploadError}
+          </p>
+        ) : (
+          <p className="admin-cover-hint">
+            {uploading ? "Uploading…" : "Optional · JPEG, PNG or WebP · you can crop after choosing"}
+          </p>
+        )}
+        {post.coverUrl ? (
+          <div className="admin-cover-links">
+            <button
+              type="button"
+              className="admin-cover-clear"
+              onClick={() =>
+                setCropSource({
+                  src: post.coverUrl,
+                  ratio:
+                    post.coverWidth && post.coverHeight
+                      ? post.coverWidth / post.coverHeight
+                      : null,
+                })
+              }
+            >
+              Adjust crop
+            </button>
+            <button
+              type="button"
+              className="admin-cover-clear"
+              onClick={() => onChange({ coverUrl: "", coverWidth: null, coverHeight: null })}
+            >
+              Remove cover
+            </button>
+          </div>
         ) : null}
       </div>
+
+      {cropSource ? (
+        <CoverCropper
+          file={cropSource.file}
+          src={cropSource.src}
+          initialRatio={cropSource.ratio ?? null}
+          onCancel={() => setCropSource(null)}
+          onDone={uploadCover}
+        />
+      ) : null}
 
       <div className="admin-editor-card">
         <div
@@ -675,19 +831,140 @@ function PostEditor({ post, onChange, onDelete, onBack, saveState }) {
           </div>
         </div>
 
+        <BubbleMenu
+          editor={editor}
+          className="admin-bubble"
+          appendTo={() => document.body}
+          options={{
+            strategy: "fixed",
+            placement: "bottom",
+            offset: 10,
+            inline: true,
+            flip: { padding: { bottom: 96 } },
+            shift: { padding: 12 },
+          }}
+          shouldShow={({ editor: current, state: editorState }) =>
+            current.isEditable &&
+            !editorState.selection.empty &&
+            !current.isActive("codeBlock")
+          }
+        >
+          <div
+            className="admin-bubble-inner"
+            role="toolbar"
+            aria-label="Selection formatting"
+            onMouseDown={(event) => event.preventDefault()}
+          >
+            <div className="admin-bubble-group">
+              <ToolButton active={state?.p} label="Paragraph" onClick={() => editor.chain().focus().setParagraph().run()}>P</ToolButton>
+              <ToolButton active={state?.h2} label="Heading 2" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>H2</ToolButton>
+              <ToolButton active={state?.h3} label="Heading 3" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>H3</ToolButton>
+            </div>
+            <div className="admin-bubble-group">
+              <ToolButton active={state?.bold} label="Bold" onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={15} /></ToolButton>
+              <ToolButton active={state?.italic} label="Italic" onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={15} /></ToolButton>
+              <ToolButton active={state?.underline} label="Underline" onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon size={15} /></ToolButton>
+              <ToolButton active={state?.strike} label="Strikethrough" onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough size={15} /></ToolButton>
+              <ToolButton active={state?.code} label="Inline code" onClick={() => editor.chain().focus().toggleCode().run()}><Code size={15} /></ToolButton>
+              <ToolButton active={state?.link} label="Link" onClick={setLink}><LinkIcon size={15} /></ToolButton>
+            </div>
+            <div className="admin-bubble-group">
+              <ToolButton active={state?.sm} label="Small text" onClick={() => editor.chain().focus().setMark("textSize", { size: "sm" }).run()}>S</ToolButton>
+              <ToolButton active={state?.md} label="Normal text" onClick={() => editor.chain().focus().setMark("textSize", { size: "md" }).run()}>M</ToolButton>
+              <ToolButton active={state?.lg} label="Large text" onClick={() => editor.chain().focus().setMark("textSize", { size: "lg" }).run()}>L</ToolButton>
+            </div>
+            <div className="admin-bubble-group admin-highlights">
+              {HIGHLIGHTS.map((item) => (
+                <button
+                  key={item.name}
+                  type="button"
+                  className="admin-swatch"
+                  style={{ background: item.color }}
+                  title={`Highlight ${item.name}`}
+                  aria-label={`Highlight ${item.name}`}
+                  onClick={() => editor.chain().focus().toggleHighlight({ color: item.color }).run()}
+                />
+              ))}
+              <button
+                type="button"
+                className="admin-tool admin-tool-clear"
+                title="Clear highlight"
+                aria-label="Clear highlight"
+                onClick={() => editor.chain().focus().unsetHighlight().run()}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </BubbleMenu>
+
         <EditorContent editor={editor} className="admin-editor" />
+      </div>
+
+      <div className="admin-action-bar" role="region" aria-label="Save and publish">
+        <div className="admin-action-info">
+          <span className={`admin-status ${post.status}`}>{post.status}</span>
+          <span className="admin-action-hint">{statusHint}</span>
+        </div>
+        <div className="admin-action-buttons">
+          {isPublished ? (
+            <a
+              className="admin-secondary"
+              href={`/blogs/${post.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Eye size={14} />
+              View post
+            </a>
+          ) : (
+            <a
+              className="admin-secondary"
+              href={`/admin/preview/${post.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Eye size={14} />
+              Preview
+            </a>
+          )}
+          <button
+            type="button"
+            className={wantsPublished ? "admin-primary" : "admin-secondary admin-save-draft"}
+            onClick={() => onCommit(targetStatus)}
+            disabled={publishing}
+          >
+            {primaryLabel}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-export default function AdminPage() {
-  const [posts, setPosts] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+export default function AdminPage({ initialPosts = [], loadError = null }) {
+  const [posts, setPosts] = useState(initialPosts);
+  const [listError, setListError] = useState(loadError);
+  const [listLoading, setListLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  const [editing, setEditing] = useState(null);
+  const [openingId, setOpeningId] = useState(null);
   const [theme, setTheme] = useState("dark");
   const [saveState, setSaveState] = useState("idle");
+  const [publishing, setPublishing] = useState(false);
+  const [editorError, setEditorError] = useState("");
+  const [editorErrorList, setEditorErrorList] = useState([]);
 
+  // Autosave bookkeeping: `version` bumps on every local edit; a save only
+  // applies server-normalized fields if nothing changed while it was in flight.
+  const versionRef = useRef(0);
+  const savedVersionRef = useRef(0);
+  const editingRef = useRef(null);
+  const saveChainRef = useRef(Promise.resolve());
+  editingRef.current = editing;
+
+  // ─── Theme (per-browser preference only) ───
   useEffect(() => {
     try {
       setTheme(localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark");
@@ -707,76 +984,237 @@ export default function AdminPage() {
     return () => root.classList.remove("light");
   }, [theme]);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setPosts(Array.isArray(parsed) ? parsed : makeSeedPosts());
-      } else {
-        setPosts(makeSeedPosts());
-      }
-    } catch {
-      setPosts(makeSeedPosts());
+  // ─── List ───
+  const refreshList = useCallback(async () => {
+    setListLoading(true);
+    const result = await listPostsAction();
+    setListLoading(false);
+    if (result.unauthorized) return goToLogin();
+    if (!result.ok) {
+      setListError(result.error);
+      return;
     }
-    setLoaded(true);
+    setListError(null);
+    setPosts(result.posts);
   }, []);
 
-  useEffect(() => {
-    if (!loaded) return undefined;
-    setSaveState("saving");
-    const timer = window.setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-        setSaveState("saved");
-      } catch {
+  const upsertSummary = useCallback((post) => {
+    setPosts((current) => {
+      const summary = summaryOf(post);
+      const exists = current.some((item) => item.id === post.id);
+      return exists
+        ? current.map((item) => (item.id === post.id ? { ...item, ...summary } : item))
+        : [summary, ...current];
+    });
+  }, []);
+
+  // ─── Saving ───
+  const flushSave = useCallback(() => {
+    saveChainRef.current = saveChainRef.current.then(async () => {
+      const post = editingRef.current;
+      const version = versionRef.current;
+      if (!post || version === savedVersionRef.current) return;
+
+      setSaveState("saving");
+      const sent = editableFields(post);
+      const result = await savePostAction(post.id, sent);
+      if (result.unauthorized) return goToLogin();
+      if (!result.ok) {
         setSaveState("error");
+        setEditorError(result.error);
+        return;
       }
-    }, 450);
+
+      savedVersionRef.current = Math.max(savedVersionRef.current, version);
+      setEditorError("");
+      upsertSummary(result.post);
+      setEditing((current) => {
+        if (!current || current.id !== result.post.id) return current;
+        const next = {
+          ...current,
+          status: result.post.status,
+          publishedAt: result.post.publishedAt,
+          updatedAt: result.post.updatedAt,
+        };
+        // Server may have de-duplicated the slug (e.g. "-2").
+        if (current.slug === sent.slug) next.slug = result.post.slug;
+        return next;
+      });
+      setSaveState(versionRef.current === savedVersionRef.current ? "saved" : "saving");
+    });
+    return saveChainRef.current;
+  }, [upsertSummary]);
+
+  useEffect(() => {
+    if (!editing || versionRef.current === savedVersionRef.current) return undefined;
+    setSaveState("saving");
+    const timer = window.setTimeout(flushSave, AUTOSAVE_MS);
     return () => window.clearTimeout(timer);
-  }, [posts, loaded]);
+  }, [editing, flushSave]);
 
-  const selectedPost = posts.find((post) => post.id === selectedId) || null;
-
-  const updatePost = (id, patch) => {
-    setPosts((current) =>
-      current.map((post) => (post.id === id ? { ...post, ...patch } : post)),
-    );
-  };
-
-  const createPost = () => {
-    const id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `post-${Date.now()}`;
-    const post = {
-      id,
-      slug: "untitled",
-      title: "",
-      excerpt: "",
-      cover: "",
-      alt: "",
-      placeholder: "",
-      content: { type: "doc", content: [{ type: "paragraph" }] },
-      status: "draft",
-      date: todayLabel(),
-      readTime: "1 min read",
+  // Warn before leaving with unsaved edits.
+  useEffect(() => {
+    const onBeforeUnload = (event) => {
+      if (versionRef.current !== savedVersionRef.current) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
     };
-    setPosts((current) => [post, ...current]);
-    setSelectedId(id);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
+  const updateEditing = (patch) => {
+    versionRef.current += 1;
+    setEditing((current) => (current ? { ...current, ...patch } : current));
   };
 
-  const deletePost = (id) => {
-    const post = posts.find((item) => item.id === id);
-    if (!post) return;
-    if (!window.confirm(`Delete “${post.title || "Untitled post"}”?`)) return;
-    setPosts((current) => current.filter((item) => item.id !== id));
-    setSelectedId((current) => (current === id ? null : current));
+  // ─── Open / close ───
+  const setUrlPost = (id) => {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("post", id);
+    else url.searchParams.delete("post");
+    window.history.replaceState(null, "", url);
   };
+
+  const openPost = useCallback(async (id) => {
+    setOpeningId(id);
+    setEditorError("");
+    setEditorErrorList([]);
+    const result = await getPostAction(id);
+    setOpeningId(null);
+    if (result.unauthorized) return goToLogin();
+    if (!result.ok) {
+      setListError(null);
+      setEditorError("");
+      setUrlPost(null);
+      showError(result.error, "Couldn’t open post");
+      return;
+    }
+    versionRef.current = 0;
+    savedVersionRef.current = 0;
+    setSaveState("idle");
+    setEditing(toEditable(result.post));
+    setUrlPost(id);
+  }, []);
+
+  // Re-open the post that was being edited before a refresh.
+  useEffect(() => {
+    const id = new URL(window.location.href).searchParams.get("post");
+    if (id) openPost(id);
+  }, [openPost]);
+
+  const closeEditor = async () => {
+    await flushSave();
+    setEditing(null);
+    setEditorError("");
+    setEditorErrorList([]);
+    setUrlPost(null);
+  };
+
+  const createPost = async () => {
+    setCreating(true);
+    const result = await createPostAction();
+    setCreating(false);
+    if (result.unauthorized) return goToLogin();
+    if (!result.ok) {
+      setListError(result.error);
+      return;
+    }
+    upsertSummary(result.post);
+    versionRef.current = 0;
+    savedVersionRef.current = 0;
+    setSaveState("idle");
+    setEditing(toEditable(result.post));
+    setUrlPost(result.post.id);
+  };
+
+  const removePost = async (post) => {
+    const confirmed = await confirmDanger({
+      title: "Delete this post?",
+      text: `“${post.title || "Untitled post"}” will be removed${
+        post.status === "published" ? " from the live blog" : ""
+      }. This can’t be undone.`,
+      confirmText: "Delete post",
+    });
+    if (!confirmed) return;
+    const result = await deletePostAction(post.id);
+    if (result.unauthorized) return goToLogin();
+    if (!result.ok) {
+      showError(result.error, "Couldn’t delete post");
+      return;
+    }
+    showToast("Post deleted");
+    setPosts((current) => current.filter((item) => item.id !== post.id));
+    if (editingRef.current?.id === post.id) {
+      versionRef.current = savedVersionRef.current;
+      setEditing(null);
+      setUrlPost(null);
+    }
+  };
+
+  // ─── Save / publish (bottom action bar) ───
+  // target = the status chosen in the Status field.
+  const commit = async (target) => {
+    if (!editing) return;
+    const wasPublished = editing.status === "published";
+    setPublishing(true);
+    setEditorError("");
+    setEditorErrorList([]);
+    await flushSave();
+    // After a flush, any remaining unsaved version means the save failed.
+    if (versionRef.current !== savedVersionRef.current) {
+      setPublishing(false);
+      showError("Your latest changes couldn’t be saved. Check the message above and try again.", "Save failed");
+      return;
+    }
+
+    let result;
+    if (target === "published") {
+      result = await publishPostAction(editing.id);
+    } else if (wasPublished) {
+      result = await unpublishPostAction(editing.id);
+    } else {
+      setPublishing(false);
+      showToast("Draft saved");
+      backToList();
+      return;
+    }
+    setPublishing(false);
+
+    if (result.unauthorized) return goToLogin();
+    if (!result.ok) {
+      // Stay in the editor so the problems can be fixed.
+      setEditorError(result.errors?.length ? "Can’t publish yet:" : result.error);
+      setEditorErrorList(result.errors || []);
+      return;
+    }
+
+    showToast(
+      target === "published"
+        ? wasPublished
+          ? "Post updated — changes are live"
+          : "Published — live on /blogs"
+        : "Moved back to drafts",
+    );
+    upsertSummary(result.post);
+    backToList();
+  };
+
+  // After a successful save/publish, return to the posts list.
+  const backToList = () => {
+    setEditing(null);
+    setEditorError("");
+    setEditorErrorList([]);
+    setSaveState("idle");
+    setUrlPost(null);
+  };
+
+  const publishedCount = posts.filter((post) => post.status === "published").length;
 
   return (
-    <main className={`admin-page${selectedPost ? " admin-page-editing" : ""}`}>
-      {!selectedPost ? (
+    <main className={`admin-page${editing ? " admin-page-editing" : ""}`}>
+      {!editing ? (
         <aside className="admin-sidebar">
           <div className="admin-brand">
             <NextLink href="/" className="admin-brand-link">
@@ -785,9 +1223,14 @@ export default function AdminPage() {
             <span className="admin-brand-sub">Studio</span>
           </div>
 
-          <button type="button" className="admin-primary admin-new" onClick={createPost}>
+          <button
+            type="button"
+            className="admin-primary admin-new"
+            onClick={createPost}
+            disabled={creating}
+          >
             <Plus size={16} />
-            New post
+            {creating ? "Creating…" : "New post"}
           </button>
 
           <div className="admin-sidebar-label">Overview</div>
@@ -799,15 +1242,11 @@ export default function AdminPage() {
             </div>
             <div>
               <span>Published</span>
-              <strong>
-                {posts.filter((post) => post.status === "published").length}
-              </strong>
+              <strong>{publishedCount}</strong>
             </div>
             <div>
               <span>Drafts</span>
-              <strong>
-                {posts.filter((post) => post.status === "draft").length}
-              </strong>
+              <strong>{posts.length - publishedCount}</strong>
             </div>
           </div>
 
@@ -833,31 +1272,48 @@ export default function AdminPage() {
           </div>
 
           <div className="admin-sidebar-foot">
-            <span className={`admin-save-state ${saveState}`}>
-              {saveLabel(saveState)}
-            </span>
-            <p>Local drafts. Backend publishing comes next.</p>
+            <span className="admin-save-state saved">Connected</span>
+            <p>Posts live in the database. Publishing updates /blogs instantly.</p>
+            <form method="post" action="/api/auth/logout">
+              <button type="submit" className="admin-secondary admin-signout">
+                <LogOut size={14} />
+                Sign out
+              </button>
+            </form>
           </div>
         </aside>
       ) : null}
 
       <section className="admin-main">
-        {selectedPost ? (
+        {editing ? (
           <PostEditor
-            key={selectedPost.id}
-            post={selectedPost}
-            onChange={(patch) => updatePost(selectedPost.id, patch)}
-            onDelete={() => deletePost(selectedPost.id)}
-            onBack={() => setSelectedId(null)}
+            key={editing.id}
+            post={editing}
+            onChange={updateEditing}
+            onDelete={() => removePost(editing)}
+            onBack={closeEditor}
+            onCommit={commit}
             saveState={saveState}
+            publishing={publishing}
+            error={editorError}
+            errorList={editorErrorList}
+            onDismissError={() => {
+              setEditorError("");
+              setEditorErrorList([]);
+            }}
           />
+        ) : openingId ? (
+          <div className="admin-loading">Opening post…</div>
         ) : (
           <Dashboard
             posts={posts}
-            loaded={loaded}
+            loading={listLoading}
+            error={listError}
+            onRetry={refreshList}
             onCreate={createPost}
-            onEdit={setSelectedId}
-            onDelete={deletePost}
+            onEdit={openPost}
+            onDelete={removePost}
+            creating={creating}
           />
         )}
       </section>
