@@ -1,11 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SectionHeader from "./SectionHeader";
 import Reveal from "./Reveal";
 import { journalEntries } from "../data/portfolio";
 import "./Journal.css";
 
 export default function Journal() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <section className="journal" id="journal">
@@ -20,7 +23,7 @@ export default function Journal() {
           subtitle="Perspectives on design, technology, and the craft of building things."
           action="View all →"
           actionVariant="shimmer"
-          actionOnClick={() => navigate("/blogs")}
+          actionOnClick={() => router.push("/blogs")}
         />
 
         <div className="journal-list">
@@ -28,7 +31,7 @@ export default function Journal() {
             <Reveal
               as={Link}
               key={entry.id}
-              to={`/blogs/${entry.id}`}
+              href={`/blogs/${entry.id}`}
               className="journal-entry"
               aria-label={entry.title}
             >

@@ -1,8 +1,10 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "../lib/gsap";
 import "./GitHubActivity.css";
 
-const GITHUB_USERNAME = import.meta.env.VITE_GITHUB_USERNAME || "";
+const GITHUB_USERNAME = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "";
 
 function GitHubIcon() {
   return (

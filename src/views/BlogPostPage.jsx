@@ -1,5 +1,7 @@
-import { useEffect, useLayoutEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { journalEntries } from "../data/portfolio";
 import { journalContent } from "../data/journalContent";
 import BackCircle from "../components/BackCircle";
@@ -14,13 +16,16 @@ function getInitialTheme() {
   }
 }
 
-export default function BlogPostPage() {
-  const { slug } = useParams();
+export default function BlogPostPage({ slug }) {
   const entry = journalEntries.find((item) => item.id === slug);
   const article = entry ? journalContent[entry.id] : null;
-  const [theme, setTheme] = useState(getInitialTheme);
+  const [theme, setTheme] = useState("dark");
 
-  useLayoutEffect(() => {
+  useEffect(() => {
+    setTheme(getInitialTheme());
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("light", theme === "light");
     try {
@@ -31,17 +36,8 @@ export default function BlogPostPage() {
     return () => root.classList.remove("light");
   }, [theme]);
 
-  useEffect(() => {
-    if (!entry) return undefined;
-    const previousTitle = document.title;
-    document.title = `${entry.title} — Meer Tahmid`;
-    return () => {
-      document.title = previousTitle;
-    };
-  }, [entry]);
-
   if (!entry || !article) {
-    return <Navigate to="/blogs" replace />;
+    return null;
   }
 
   return (
@@ -94,8 +90,8 @@ export default function BlogPostPage() {
         </div>
 
         <footer className="post-footer">
-          <Link to="/blogs">← All thoughts</Link>
-          <Link to="/">Back home</Link>
+          <Link href="/blogs">← All thoughts</Link>
+          <Link href="/">Back home</Link>
         </footer>
       </article>
     </main>

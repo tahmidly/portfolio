@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+"use client";
+
+import { useRef } from "react";
+import Link from "next/link";
 import useHlsVideo from "../hooks/useHlsVideo";
 import { journalEntries } from "../data/portfolio";
 import { journalContent } from "../data/journalContent";
@@ -9,14 +11,6 @@ import "./BlogsPage.css";
 export default function BlogsPage() {
   const videoRef = useRef(null);
   useHlsVideo(videoRef);
-
-  useEffect(() => {
-    const previousTitle = document.title;
-    document.title = "Blogs — Meer Tahmid";
-    return () => {
-      document.title = previousTitle;
-    };
-  }, []);
 
   return (
     <main className="blogs-page">
@@ -58,7 +52,7 @@ export default function BlogsPage() {
               <Link
                 key={entry.id}
                 id={entry.id}
-                to={`/blogs/${entry.id}`}
+                href={`/blogs/${entry.id}`}
                 className="blog-card"
               >
                 <div className={`blog-thumb ${entry.placeholder}`}>
@@ -88,7 +82,7 @@ export default function BlogsPage() {
           </div>
 
           <footer className="blogs-footer">
-            <Link to="/" className="blogs-footer-link">
+            <Link href="/" className="blogs-footer-link">
               ← Back home
             </Link>
             <span>© 2026 Meer Tahmid</span>
