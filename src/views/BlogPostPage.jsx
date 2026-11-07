@@ -1,40 +1,13 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { journalEntries } from "../data/portfolio";
 import { journalContent } from "../data/journalContent";
 import BackCircle from "../components/BackCircle";
-import ThemeToggle from "../components/ThemeToggle";
+import BlogThemeToggle from "../components/BlogThemeToggle";
 import "./BlogPostPage.css";
-
-function getInitialTheme() {
-  try {
-    return localStorage.getItem("blog-theme") === "light" ? "light" : "dark";
-  } catch {
-    return "dark";
-  }
-}
 
 export default function BlogPostPage({ slug }) {
   const entry = journalEntries.find((item) => item.id === slug);
   const article = entry ? journalContent[entry.id] : null;
-  const [theme, setTheme] = useState("dark");
-
-  useEffect(() => {
-    setTheme(getInitialTheme());
-  }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("light", theme === "light");
-    try {
-      localStorage.setItem("blog-theme", theme);
-    } catch {
-      // ignore storage failures
-    }
-    return () => root.classList.remove("light");
-  }, [theme]);
 
   if (!entry || !article) {
     return null;
@@ -45,12 +18,7 @@ export default function BlogPostPage({ slug }) {
       <div className="post-glow" aria-hidden="true" />
 
       <BackCircle to="/blogs" label="Back to blogs" />
-      <ThemeToggle
-        theme={theme}
-        onToggle={() =>
-          setTheme((current) => (current === "dark" ? "light" : "dark"))
-        }
-      />
+      <BlogThemeToggle />
 
       <article className="post-article">
         <header>

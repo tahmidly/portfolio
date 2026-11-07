@@ -1,30 +1,14 @@
-"use client";
-
-import { useRef } from "react";
 import Link from "next/link";
-import useHlsVideo from "../hooks/useHlsVideo";
 import { journalEntries } from "../data/portfolio";
 import { journalContent } from "../data/journalContent";
 import BackCircle from "../components/BackCircle";
+import BlogsVideo from "../components/BlogsVideo";
 import "./BlogsPage.css";
 
 export default function BlogsPage() {
-  const videoRef = useRef(null);
-  useHlsVideo(videoRef);
-
   return (
     <main className="blogs-page">
-      <div className="blogs-video-bg" aria-hidden="true">
-        <video
-          ref={videoRef}
-          className="blogs-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
-        <div className="blogs-video-overlay" />
-      </div>
+      <BlogsVideo />
 
       <BackCircle to="/" label="Back to portfolio" />
 

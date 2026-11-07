@@ -1,6 +1,6 @@
 import "../styles/tailwind.css";
 import "../styles/base.css";
-import Navbar from "../components/Navbar";
+import SiteChrome from "../components/SiteChrome";
 
 export const metadata = {
   metadataBase: new URL(
@@ -30,8 +30,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <Navbar />
-        {children}
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
