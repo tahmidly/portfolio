@@ -18,6 +18,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
+        <link
+          rel="preload"
+          href="/logo-mark.png"
+          as="image"
+          fetchPriority="high"
+        />
+        <link
+          rel="preconnect"
+          href="https://stream.mux.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="preconnect" href="https://image.mux.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

@@ -3,8 +3,11 @@
 import { useEffect } from "react";
 import Hls from "hls.js";
 
-const VIDEO_SRC =
-  "https://stream.mux.com/Aa02T7oM1wH5Mk5EEVDYhbZ1ChcdhRsS2m1NYyx4Ua1g.m3u8";
+const PLAYBACK_ID = "Aa02T7oM1wH5Mk5EEVDYhbZ1ChcdhRsS2m1NYyx4Ua1g";
+const VIDEO_SRC = `https://stream.mux.com/${PLAYBACK_ID}.m3u8`;
+
+/** First frame of the stream, shown instantly while HLS spins up. */
+export const VIDEO_POSTER = `https://image.mux.com/${PLAYBACK_ID}/thumbnail.webp?time=0&width=1280`;
 
 /**
  * Attaches the shared HLS background video source to a <video> ref,
@@ -18,7 +21,9 @@ export default function useHlsVideo(videoRef) {
     let hls;
 
     if (Hls.isSupported()) {
-      hls = new Hls({ lowLatencyMode: true });
+      // VOD stream: low-latency mode only adds overhead. Never fetch a
+      // rendition larger than the element actually displays.
+      hls = new Hls({ capLevelToPlayerSize: true });
       hls.loadSource(VIDEO_SRC);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {

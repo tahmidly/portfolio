@@ -1,21 +1,86 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "../lib/gsap";
-import useHlsVideo from "../hooks/useHlsVideo";
+import useHlsVideo, { VIDEO_POSTER } from "../hooks/useHlsVideo";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import GitHubActivity from "./GitHubActivity";
+import PageLoader from "./PageLoader";
 import "./Hero.css";
+
+// Survives client-side navigation, so the loader only shows on first load.
+let hasBooted = false;
+
+const MIN_LOADER_MS = 600;
+const MAX_LOADER_MS = 3500;
+const REVISIT_MAX_MS = 1200;
 
 export default function Hero() {
   const sectionRef = useRef(null);
   const videoRef = useRef(null);
+  const timelineRef = useRef(null);
+
+  const [showLoader, setShowLoader] = useState(() => !hasBooted);
+  const [progress, setProgress] = useState(10);
+  const [ready, setReady] = useState(false);
 
   useHlsVideo(videoRef);
 
+  // Wait for the display font and the first video frames (capped so a slow
+  // stream never blocks the page), then release the intro.
+  useEffect(() => {
+    let cancelled = false;
+    const firstLoad = !hasBooted;
+    const bump = (amount) => {
+      if (!cancelled) setProgress((value) => Math.min(95, value + amount));
+    };
+
+    const fonts = document.fonts
+      ? Promise.all([
+          document.fonts.load('italic 400 1em "Instrument Serif"'),
+          document.fonts.ready,
+        ]).catch(() => {})
+      : Promise.resolve();
+    fonts.then(() => bump(35));
+
+    const video = videoRef.current;
+    const videoReady = new Promise((resolve) => {
+      if (!video || video.readyState >= 3) return resolve();
+      video.addEventListener("canplay", resolve, { once: true });
+      video.addEventListener("error", resolve, { once: true });
+    });
+    videoReady.then(() => bump(50));
+
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    Promise.race([
+      Promise.all([fonts, videoReady, wait(firstLoad ? MIN_LOADER_MS : 0)]),
+      wait(firstLoad ? MAX_LOADER_MS : REVISIT_MAX_MS),
+    ]).then(() => {
+      if (cancelled) return;
+      hasBooted = true;
+      setReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Start the intro as the loader begins to fade, not after it is gone.
+  useEffect(() => {
+    if (ready) timelineRef.current?.play();
+  }, [ready]);
+
+  const handleLoaderExited = useCallback(() => setShowLoader(false), []);
+
   useEffect(() => {
     const context = gsap.context(() => {
-      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out" },
+      });
+      timelineRef.current = timeline;
 
       timeline.fromTo(
         ".name-reveal",
@@ -31,15 +96,28 @@ export default function Hero() {
       );
     }, sectionRef);
 
-    return () => context.revert();
+    return () => {
+      timelineRef.current = null;
+      context.revert();
+    };
   }, []);
 
   return (
     <section className="hero" id="hero" ref={sectionRef}>
+      {showLoader ? (
+        <PageLoader
+          progress={progress}
+          done={ready}
+          onExited={handleLoaderExited}
+        />
+      ) : null}
+
       <div className="hero-video-wrap">
         <video
           ref={videoRef}
           className="hero-video"
+          poster={VIDEO_POSTER}
+          preload="auto"
           autoPlay
           muted
           loop
