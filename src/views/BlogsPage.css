@@ -245,3 +245,12 @@
     display: none;
   }
 }
+
+.blogs-empty {
+  padding: 3rem 1rem;
+  border: 1px dashed var(--stroke);
+  border-radius: 1.2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}

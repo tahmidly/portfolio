@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { journalEntries } from "../data/portfolio";
-import { journalContent } from "../data/journalContent";
 import BackCircle from "../components/BackCircle";
 import BlogsVideo from "../components/BlogsVideo";
+import CoverImage, { CoverFallback, placeholderFor } from "../components/CoverImage";
+import { formatPostDate } from "../lib/content";
 import "./BlogsPage.css";
 
-export default function BlogsPage() {
+export default function BlogsPage({ posts = [] }) {
   return (
     <main className="blogs-page">
       <BlogsVideo />
@@ -31,45 +31,58 @@ export default function BlogsPage() {
 
       <section className="blogs-list-section">
         <div className="blogs-inner">
-          <div className="blogs-list">
-            {journalEntries.map((entry) => (
-              <Link
-                key={entry.id}
-                id={entry.id}
-                href={`/blogs/${entry.id}`}
-                className="blog-card"
-              >
-                <div className={`blog-thumb ${entry.placeholder}`}>
-                  <img
-                    src={entry.image}
-                    alt={entry.alt}
-                    className="placeholder-img rounded-full"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="blog-content">
-                  <div className="blog-meta">
-                    <span>{entry.date}</span>
-                    <span className="blog-dot" />
-                    <span>{entry.readTime}</span>
+          {posts.length === 0 ? (
+            <p className="blogs-empty">
+              Nothing published yet — new writing is on the way.
+            </p>
+          ) : (
+            <div className="blogs-list">
+              {posts.map((post, index) => (
+                <Link
+                  key={post.id}
+                  id={post.slug}
+                  href={`/blogs/${post.slug}`}
+                  className="blog-card"
+                >
+                  <div className={`blog-thumb ${placeholderFor(post.slug)}`}>
+                    {post.coverUrl ? (
+                      <CoverImage
+                        src={post.coverUrl}
+                        alt={post.coverAlt || post.title}
+                        className="placeholder-img rounded-full"
+                        width={144}
+                        height={144}
+                        sizes="72px"
+                        eager={index < 2}
+                      />
+                    ) : (
+                      <CoverFallback title={post.title} />
+                    )}
                   </div>
-                  <h2 className="blog-title">{entry.title}</h2>
-                  <p className="blog-excerpt">
-                    {journalContent[entry.id]?.excerpt}
-                  </p>
-                </div>
-                <span className="blog-arrow" aria-hidden="true">
-                  ↗
-                </span>
-              </Link>
-            ))}
-          </div>
+                  <div className="blog-content">
+                    <div className="blog-meta">
+                      <time dateTime={post.publishedAt}>
+                        {formatPostDate(post.publishedAt)}
+                      </time>
+                      <span className="blog-dot" />
+                      <span>{post.readingTime}</span>
+                    </div>
+                    <h2 className="blog-title">{post.title}</h2>
+                    <p className="blog-excerpt">{post.excerpt}</p>
+                  </div>
+                  <span className="blog-arrow" aria-hidden="true">
+                    ↗
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <footer className="blogs-footer">
             <Link href="/" className="blogs-footer-link">
               ← Back home
             </Link>
-            <span>© 2026 Meer Tahmid</span>
+            <span>© {new Date().getFullYear()} Meer Tahmid</span>
           </footer>
         </div>
       </section>

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SectionHeader from "./SectionHeader";
 import Reveal from "./Reveal";
-import { journalEntries } from "../data/portfolio";
+import { CoverFallback } from "./CoverImage";
 import "./Journal.css";
 
-export default function Journal() {
+export default function Journal({ entries = [] }) {
   const router = useRouter();
 
   return (
@@ -26,8 +26,21 @@ export default function Journal() {
           actionOnClick={() => router.push("/blogs")}
         />
 
+        {entries.length === 0 ? (
+          <Reveal className="journal-empty">
+            <span className="journal-empty-dot" aria-hidden="true" />
+            <div>
+              <p className="journal-empty-title">First posts are on the way</p>
+              <p className="journal-empty-sub">
+                Notes on design, motion and building things will show up here
+                soon.
+              </p>
+            </div>
+          </Reveal>
+        ) : null}
+
         <div className="journal-list">
-          {journalEntries.map((entry) => (
+          {entries.map((entry) => (
             <Reveal
               as={Link}
               key={entry.id}
@@ -36,12 +49,16 @@ export default function Journal() {
               aria-label={entry.title}
             >
               <div className={`journal-thumb ${entry.placeholder}`}>
-                <img
-                  src={entry.image}
-                  alt={entry.alt}
-                  className="placeholder-img rounded-full"
-                  loading="lazy"
-                />
+                {entry.image ? (
+                  <img
+                    src={entry.image}
+                    alt={entry.alt}
+                    className="placeholder-img rounded-full"
+                    loading="lazy"
+                  />
+                ) : (
+                  <CoverFallback title={entry.title} />
+                )}
               </div>
               <div className="journal-content">
                 <div className="journal-title">{entry.title}</div>

@@ -1,28 +1,32 @@
-import { journalEntries } from "../data/portfolio";
+import { getPublishedPosts } from "../lib/posts";
+import { SITE_URL } from "../lib/site";
 
-const baseUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-).replace(/\/$/, "");
+export const revalidate = 60;
 
-export default function sitemap() {
-  const now = new Date();
+export default async function sitemap() {
+  const posts = await getPublishedPosts();
+  const latest = posts[0]?.updatedAt ? new Date(posts[0].updatedAt) : new Date();
+  const newestUpdate = posts.reduce(
+    (max, post) => Math.max(max, new Date(post.updatedAt).getTime()),
+    latest.getTime(),
+  );
 
   return [
     {
-      url: baseUrl,
-      lastModified: now,
+      url: SITE_URL,
+      lastModified: new Date(newestUpdate),
       changeFrequency: "monthly",
       priority: 1,
     },
     {
-      url: `${baseUrl}/blogs`,
-      lastModified: now,
+      url: `${SITE_URL}/blogs`,
+      lastModified: new Date(newestUpdate),
       changeFrequency: "weekly",
       priority: 0.8,
     },
-    ...journalEntries.map((entry) => ({
-      url: `${baseUrl}/blogs/${entry.id}`,
-      lastModified: new Date(entry.date),
+    ...posts.map((post) => ({
+      url: `${SITE_URL}/blogs/${post.slug}`,
+      lastModified: new Date(post.updatedAt),
       changeFrequency: "monthly",
       priority: 0.7,
     })),
