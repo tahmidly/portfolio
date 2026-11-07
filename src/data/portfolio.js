@@ -8,44 +8,43 @@ export const navLinks = [
 
 export const works = [
   {
-    id: "automotive-motion",
-    title: "Automotive Motion",
-    tag: "Branding · Motion",
+    id: "kommercly",
+    title: "Kommercly",
+    tag: "E-commerce · SaaS",
+    description:
+      "Mobile-first store builder with WhatsApp ordering for Bangladeshi merchants.",
     image:
-      "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=900&q=80&auto=format&fit=crop",
-    alt: "Automotive Motion – sleek sports car in motion",
+      "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200&q=80&auto=format&fit=crop",
+    alt: "Person shopping online with a credit card and laptop",
     placeholder: "ph-1",
     span: "bento-col-7",
+    url: "https://kommercly.com/",
   },
   {
-    id: "urban-architecture",
-    title: "Urban Architecture",
-    tag: "Photography · 3D",
+    id: "khamarvest",
+    title: "KhamarVest",
+    tag: "Farm Management · Dashboard",
+    description:
+      "Cattle, inventory and finance management in one farm dashboard.",
     image:
-      "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&auto=format&fit=crop",
-    alt: "Urban Architecture – modern city building facade",
-    placeholder: "ph-2",
+      "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&q=80&auto=format&fit=crop",
+    alt: "Cattle in a field at sunset",
+    placeholder: "ph-5",
     span: "bento-col-5",
+    url: "https://khamar-management.vercel.app/",
   },
   {
-    id: "human-perspective",
-    title: "Human Perspective",
-    tag: "Portrait · Direction",
+    id: "3dtostrip",
+    title: "3DToStrip",
+    tag: "3D · Developer Tool",
+    description:
+      "Turns 3D models into tiny strip PNGs for lightweight hover previews — about 1KB instead of loading the full model.",
     image:
-      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=900&q=80&auto=format&fit=crop",
-    alt: "Human Perspective – cinematic portrait photograph",
+      "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=1200&q=80&auto=format&fit=crop",
+    alt: "Abstract 3D render",
     placeholder: "ph-3",
-    span: "bento-col-5",
-  },
-  {
-    id: "brand-identity",
-    title: "Brand Identity",
-    tag: "Identity · Design",
-    image:
-      "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=900&q=80&auto=format&fit=crop",
-    alt: "Brand Identity – clean design workspace with branding materials",
-    placeholder: "ph-4",
-    span: "bento-col-7",
+    span: "bento-col-12",
+    url: "https://github.com/teammeer/3dtostrip-landing",
   },
 ];
 
@@ -137,4 +136,9 @@ export const stats = [
   { value: "95%", label: "Satisfied Clients" },
 ];
 
-export const socialLinks = ["Twitter", "LinkedIn", "Dribbble", "GitHub"];
+export const socialLinks = [
+  { label: "Facebook", url: "https://www.facebook.com/tahmidly" },
+  { label: "GitHub", url: "https://github.com/tahmidly" },
+  { label: "Instagram", url: "https://www.instagram.com/tahmid.ly/" },
+  { label: "LinkedIn", url: "https://www.linkedin.com/in/tahmidly/" },
+];

@@ -33,6 +33,9 @@
   .bento-col-5 {
     grid-column: span 5;
   }
+  .bento-col-12 {
+    grid-column: span 12;
+  }
 }
 
 .work-card {
@@ -43,6 +46,9 @@
   aspect-ratio: 4/3;
   position: relative;
   cursor: pointer;
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 @media (min-width: 768px) {
   .work-card {
@@ -90,12 +96,54 @@
 
 .work-card-label {
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
   padding: 0.5rem 1.25rem;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.95);
   color: #111;
   font-size: 0.875rem;
   font-weight: 500;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(27, 204, 254, 0.25);
+}
+.work-card-label::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(27, 204, 254, 0.35) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: work-label-shine 2.8s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+.work-card-label::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes work-label-shine {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -80% 0;
+  }
 }
 .work-card-label em {
   font-family: var(--font-display);
@@ -104,9 +152,16 @@
 
 .work-card-meta {
   position: absolute;
-  bottom: 1rem;
-  left: 1rem;
-  right: 1rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2.75rem 1.25rem 1.1rem;
+  background: linear-gradient(
+    to top,
+    rgba(6, 6, 6, 0.92) 0%,
+    rgba(6, 6, 6, 0.55) 45%,
+    transparent 100%
+  );
 }
 .work-card-tag {
   display: inline-block;
@@ -120,4 +175,11 @@
   font-size: 1rem;
   font-weight: 500;
   color: var(--text);
+}
+.work-card-desc {
+  margin-top: 0.3rem;
+  max-width: 56ch;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--muted);
 }

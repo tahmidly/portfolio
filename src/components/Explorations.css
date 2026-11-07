@@ -1,6 +1,6 @@
 .explorations {
   position: relative;
-  min-height: 300vh;
+  min-height: max(1250px, 120vh);
   overflow: hidden;
 }
 .explorations-sticky {

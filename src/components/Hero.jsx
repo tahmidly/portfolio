@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "../lib/gsap";
 import useHlsVideo from "../hooks/useHlsVideo";
-import { ShimmerButton } from "./ui/shimmer-button";
+import NoisyShimmerButton from "./ui/NoisyShimmerButton";
+import GitHubActivity from "./GitHubActivity";
 import "./Hero.css";
 
 export default function Hero() {
@@ -54,14 +55,8 @@ export default function Hero() {
           React and JavaScript technologies.
         </p>
         <div className="hero-ctas blur-in">
-          <ShimmerButton
+          <NoisyShimmerButton
             type="button"
-            className="btn-shimmer-noise"
-            shimmerColor="#1bccfe"
-            shimmerSize="0.06em"
-            shimmerDuration="2.8s"
-            borderRadius="100px"
-            background="#0b0b0b"
             onClick={() =>
               document
                 .getElementById("works")
@@ -71,7 +66,7 @@ export default function Hero() {
             <span className="text-sm font-medium tracking-tight text-white">
               See Works
             </span>
-          </ShimmerButton>
+          </NoisyShimmerButton>
           <button
             type="button"
             className="btn-secondary"
@@ -84,6 +79,7 @@ export default function Hero() {
             Reach out...
           </button>
         </div>
+        <GitHubActivity />
       </div>
 
       <div className="scroll-indicator">

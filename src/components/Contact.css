@@ -76,25 +76,15 @@
   line-height: 0.95;
   margin-bottom: 2.5rem;
 }
-.footer-email-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.9rem 2rem;
-  border-radius: 9999px;
-  background: transparent;
-  border: 1px solid var(--stroke);
-  color: var(--text);
-  font-size: 0.875rem;
-  font-family: var(--font-body);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.25s ease;
-  position: relative;
+.footer-email-wrap {
+  display: flex;
+  justify-content: center;
 }
-.footer-email-btn:hover {
-  box-shadow: 0 0 0 2px #1bccfe;
-  border-color: transparent;
+.footer-email-wrap .btn-shimmer-noise {
+  box-shadow: none;
+}
+.footer-email-wrap .btn-shimmer-noise:hover {
+  box-shadow: none;
 }
 
 .footer-bar {

@@ -16,6 +16,7 @@ export default function Journal() {
           }
           subtitle="Perspectives on design, technology, and the craft of building things."
           action="View all →"
+          actionVariant="shimmer"
         />
 
         <div className="journal-list">

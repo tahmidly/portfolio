@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "../lib/gsap";
 import useHlsVideo from "../hooks/useHlsVideo";
+import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import { socialLinks } from "../data/portfolio";
 import "./Contact.css";
 
@@ -59,16 +60,32 @@ export default function Contact() {
             <br />
             something great.
           </div>
-          <a href="mailto:hello@alexsinyo.com" className="footer-email-btn">
-            hello@alexsinyo.com ↗
-          </a>
+          <div className="footer-email-wrap">
+            <NoisyShimmerButton
+              type="button"
+              aria-label="Email redfoxtahmid@gmail.com"
+              onClick={() => {
+                window.location.href = "mailto:redfoxtahmid@gmail.com";
+              }}
+            >
+              <span className="text-sm font-medium tracking-tight text-white">
+                redfoxtahmid@gmail.com ↗
+              </span>
+            </NoisyShimmerButton>
+          </div>
         </div>
 
         <div className="footer-bar">
           <div className="social-links">
-            {socialLinks.map((label) => (
-              <a key={label} className="social-link">
-                {label}
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                className="social-link"
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {social.label}
               </a>
             ))}
           </div>

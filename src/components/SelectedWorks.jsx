@@ -16,11 +16,20 @@ export default function SelectedWorks() {
           }
           subtitle="A selection of projects I've worked on, from concept to launch."
           action="View all work →"
+          actionVariant="shimmer"
         />
 
         <div className="bento-grid">
           {works.map((work) => (
-            <Reveal key={work.id} className={`work-card ${work.span}`}>
+            <Reveal
+              as="a"
+              key={work.id}
+              href={work.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`work-card ${work.span}`}
+              aria-label={`${work.title} — open project`}
+            >
               <div className={`work-card-img ${work.placeholder}`}>
                 <img
                   src={work.image}
@@ -38,6 +47,7 @@ export default function SelectedWorks() {
               <div className="work-card-meta">
                 <span className="work-card-tag">{work.tag}</span>
                 <div className="work-card-title">{work.title}</div>
+                <p className="work-card-desc">{work.description}</p>
               </div>
             </Reveal>
           ))}

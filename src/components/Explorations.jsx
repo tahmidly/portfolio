@@ -59,15 +59,15 @@ export default function Explorations() {
         <div className="explorations-content">
           <div className="section-eyebrow explorations-eyebrow">
             <div className="eyebrow-line" />
-            <span className="eyebrow-text">Explorations</span>
+            <span className="eyebrow-text">Photography</span>
             <div className="eyebrow-line" />
           </div>
           <h2 className="explorations-heading">
-            Visual <em>playground</em>
+            Through <em>my lens</em>
           </h2>
           <p className="explorations-sub">
-            Experimental work exploring the boundaries of digital craft and
-            creative intuition.
+            A personal collection of places, light and small moments I've
+            captured.
           </p>
           <button type="button" className="dribbble-btn">
             <svg
@@ -85,7 +85,7 @@ export default function Explorations() {
                 strokeWidth="1"
               />
             </svg>
-            View on Dribbble
+            View gallery
           </button>
         </div>
       </div>

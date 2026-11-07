@@ -1,7 +1,14 @@
 import Reveal from "./Reveal";
+import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import "./SectionHeader.css";
 
-export default function SectionHeader({ eyebrow, title, subtitle, action }) {
+export default function SectionHeader({
+  eyebrow,
+  title,
+  subtitle,
+  action,
+  actionVariant = "default",
+}) {
   return (
     <Reveal className="section-header" start="top 85%">
       <div className="section-header-row">
@@ -14,9 +21,19 @@ export default function SectionHeader({ eyebrow, title, subtitle, action }) {
           {subtitle ? <p className="section-sub">{subtitle}</p> : null}
         </div>
         {action ? (
-          <button type="button" className="view-all-btn">
-            {action}
-          </button>
+          actionVariant === "shimmer" ? (
+            <div className="section-header-action">
+              <NoisyShimmerButton type="button">
+                <span className="text-sm font-medium tracking-tight text-white whitespace-nowrap">
+                  {action}
+                </span>
+              </NoisyShimmerButton>
+            </div>
+          ) : (
+            <button type="button" className="view-all-btn">
+              {action}
+            </button>
+          )
         ) : null}
       </div>
     </Reveal>
