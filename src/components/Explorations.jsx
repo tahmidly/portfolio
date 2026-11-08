@@ -9,6 +9,8 @@ export default function Explorations() {
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return undefined;
+    // Phones use a compact static grid (Explorations.css): no parallax.
+    if (window.matchMedia("(max-width: 640px)").matches) return undefined;
 
     const context = gsap.context(() => {
       const items = gsap.utils.toArray(".gallery-item");
