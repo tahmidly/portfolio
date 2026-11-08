@@ -36,6 +36,9 @@
   .bento-col-12 {
     grid-column: span 12;
   }
+  .bento-col-4 {
+    grid-column: span 4;
+  }
 }
 
 .work-card {

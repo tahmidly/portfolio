@@ -16,6 +16,7 @@
 
 .nav-pill {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   border-radius: 9999px;
   backdrop-filter: blur(12px);
@@ -135,6 +136,10 @@
 
 .nav-sayhi {
   position: relative;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
   font-size: 13px;
   border-radius: 9999px;
   cursor: pointer;
@@ -153,10 +158,238 @@
 }
 .nav-sayhi-inner {
   position: relative;
+  white-space: nowrap;
   padding: 0.375rem 0.875rem;
   background: var(--surface);
   border-radius: 9999px;
   color: var(--text);
   font-size: 13px;
   backdrop-filter: blur(12px);
+}
+
+
+/* ─── Phone (≤ 640px): [back]  [Home · Works · Blogs]  [logo] [☰] ─── */
+.nav-mobile,
+.nav-drawer,
+.nav-drawer-backdrop {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0.85rem 0.75rem 0;
+  }
+  .nav-desktop {
+    display: none;
+  }
+
+  .nav-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    width: 100%;
+    /* Empty space between the pieces lets taps reach the page. */
+    pointer-events: none;
+  }
+  .nav-mobile > * {
+    pointer-events: auto;
+  }
+
+  /* Round glass buttons (back, menu, close). */
+  .nav-round {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(20, 20, 20, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .nav-round:active {
+    color: var(--accent);
+    border-color: rgba(27, 204, 254, 0.45);
+  }
+  .nav-round-spacer {
+    visibility: hidden;
+  }
+
+  /* Center pill with the page links. */
+  .nav-mobile-links {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    min-width: 0;
+    padding: 0.3rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: box-shadow 0.3s ease;
+  }
+  .nav-mobile-links.scrolled {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .nav-mobile-links .nav-link {
+    font-size: 12.5px;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .nav-mobile-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+  .nav-mobile-logo {
+    display: block;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg);
+    box-shadow: 0 0 0 1px rgba(27, 204, 254, 0.28);
+  }
+
+  /* Drawer: slides in from the right. */
+  .nav-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .nav-drawer-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-drawer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 71;
+    width: min(82vw, 320px);
+    padding: 0.85rem 1rem 1.5rem;
+    background: rgba(12, 12, 12, 0.96);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), visibility 0.35s;
+    overflow-y: auto;
+  }
+  .nav-drawer.is-open {
+    transform: none;
+    visibility: visible;
+  }
+  .nav-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-drawer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .nav-drawer-link {
+    display: block;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: none;
+    border-radius: 0.9rem;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .nav-drawer-link:active,
+  .nav-drawer-link.active {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .nav-drawer-cta {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: none;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #1bccfe, #0a9fcb);
+    color: #04141a;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .nav-drawer-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--stroke);
+  }
+  .nav-drawer-social a {
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-decoration: none;
+  }
+  .nav-drawer-social a:active {
+    color: var(--accent);
+  }
+
+  .light .nav-round {
+    color: rgba(20, 20, 20, 0.8);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  .light .nav-mobile-links {
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  .light .nav-drawer {
+    background: rgba(255, 255, 255, 0.97);
+    border-left-color: rgba(0, 0, 0, 0.08);
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.12);
+  }
+  .light .nav-drawer-link:active,
+  .light .nav-drawer-link.active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Very narrow phones (≤ 360px): tighter center pill. */
+@media (max-width: 360px) {
+  .nav-mobile-links .nav-link {
+    font-size: 12px;
+    padding: 0.35rem 0.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-drawer,
+  .nav-drawer-backdrop {
+    transition: none;
+  }
 }

@@ -37,4 +37,25 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+// One Markdown file per project in src/content/works/ (managed in the studio
+// under "Projects"). The home page shows the 3 picked in src/data/featured.json.
+const works = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/works" }),
+  schema: z.object({
+    title: z.string(),
+    /** Short category line, e.g. "E-commerce · SaaS". */
+    tag: optionalText,
+    description: z.string(),
+    /** Card image: an upload in public/works/ or an https URL. */
+    image: optionalText,
+    imageAlt: optionalText,
+    /** Where the card links to (live site, repo…). */
+    url: optionalText,
+    /** Sort order on /works: newest first. */
+    date: z.coerce.date(),
+    draft: z.preprocess(blank, z.boolean().default(false)),
+    studioId: optionalText,
+  }),
+});
+
+export const collections = { blog, works };

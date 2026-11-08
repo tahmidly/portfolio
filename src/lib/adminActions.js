@@ -22,3 +22,14 @@ export const savePostAction = (id, input) => call("save", id, input);
 export const publishPostAction = (id) => call("publish", id);
 export const unpublishPostAction = (id) => call("unpublish", id);
 export const deletePostAction = (id) => call("delete", id);
+
+// Projects (src/content/works) and the home page picks (src/data/featured.json).
+export const listWorksAction = () => call("works.list");
+export const getWorkAction = (id) => call("works.get", id);
+export const createWorkAction = () => call("works.create");
+export const saveWorkAction = (id, input) => call("works.save", id, input);
+export const publishWorkAction = (id) => call("works.publish", id);
+export const unpublishWorkAction = (id) => call("works.unpublish", id);
+export const deleteWorkAction = (id) => call("works.delete", id);
+export const getFeaturedAction = () => call("featured.get");
+export const saveFeaturedAction = (featured) => call("featured.save", featured);

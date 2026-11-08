@@ -11,6 +11,10 @@ import { placeholderFor } from "../components/CoverImage.jsx";
 import { formatPostDate, getPublishedPosts } from "../lib/blog";
 import { AUTHOR, SITE_URL, absoluteUrl } from "../lib/site";
 import { socialLinks } from "../data/portfolio";
+import { getFeaturedWorks } from "../lib/works";
+
+// The 3 projects picked in the studio ("Home featured"), in grid order.
+const featuredWorks = await getFeaturedWorks();
 
 // Latest 4 posts from src/content/blog/ for the Journal section.
 const posts = await getPublishedPosts();
@@ -47,7 +51,7 @@ const jsonLd = [
 <BaseLayout canonical="/" jsonLd={jsonLd}>
   <main>
     <Hero client:load />
-    <SelectedWorks client:load />
+    <SelectedWorks client:load works={featuredWorks} />
     <Journal client:load entries={entries} />
     <Explorations client:load />
     <TechStack />

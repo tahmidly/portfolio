@@ -1,8 +1,14 @@
 import "./BackCircle.css";
 
-export default function BackCircle({ to, label }) {
+// `keepOnMobile`: stay visible (pinned) on phones. Elsewhere the phone
+// navbar shows its own back button instead.
+export default function BackCircle({ to, label, keepOnMobile = false }) {
   return (
-    <a href={to} className="back-circle" aria-label={label}>
+    <a
+      href={to}
+      className={`back-circle${keepOnMobile ? " back-circle--keep" : ""}`}
+      aria-label={label}
+    >
       <svg
         width="16"
         height="16"

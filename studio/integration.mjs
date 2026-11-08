@@ -1,7 +1,8 @@
 // Local writing studio. Only active during `astro dev`:
 //   /admin             the studio UI (src/studio/admin.astro)
 //   /api/studio        { action, args } → read/write src/content/blog/*.md
-//   /api/studio/upload multipart cover upload → public/blog/<uuid>.<ext>
+//   /api/studio/upload multipart image upload → public/blog|works/<uuid>.<ext>
+//                      (?folder=works for project images)
 //
 // The API runs as Vite middleware inside the Node dev process (Astro's
 // Cloudflare dev runtime can't write to disk). Production builds contain
@@ -10,8 +11,20 @@
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { StudioError, createPostStore, saveCover } from "./posts-store.mjs";
+import { createWorksStore } from "./works-store.mjs";
 
-const ACTIONS = ["list", "get", "create", "save", "publish", "unpublish", "delete"];
+// action name → [store, method, response key]
+function actionTable(posts, works) {
+  const table = {};
+  for (const name of ["list", "get", "create", "save", "publish", "unpublish", "delete"]) {
+    const key = name === "list" ? "posts" : name === "delete" ? null : "post";
+    table[name] = [posts, name, key];
+    table[`works.${name}`] = [works, name, name === "list" ? "works" : name === "delete" ? null : "work"];
+  }
+  table["featured.get"] = [works, "getFeatured", "featured"];
+  table["featured.save"] = [works, "saveFeatured", "featured"];
+  return table;
+}
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -30,7 +43,7 @@ function toWebRequest(req) {
 }
 
 function studioApi(root) {
-  const store = createPostStore(root);
+  const actions = actionTable(createPostStore(root), createWorksStore(root));
 
   return {
     name: "local-studio-api",
@@ -53,7 +66,8 @@ function studioApi(root) {
             if (!file || typeof file === "string") {
               return sendJson(res, 400, { error: "No file received." });
             }
-            const result = await saveCover(root, new Uint8Array(await file.arrayBuffer()));
+            const folder = new URL(req.url, "http://localhost").searchParams.get("folder") || "blog";
+            const result = await saveCover(root, new Uint8Array(await file.arrayBuffer()), folder);
             return sendJson(res, 201, result);
           } catch (error) {
             if (error instanceof StudioError) return sendJson(res, error.status, { error: error.message });
@@ -64,15 +78,14 @@ function studioApi(root) {
 
         try {
           const body = await toWebRequest(req).json();
-          if (!ACTIONS.includes(body?.action)) {
+          const entry = Object.hasOwn(actions, body?.action) ? actions[body.action] : null;
+          if (!entry) {
             return sendJson(res, 400, { ok: false, error: "Unknown action." });
           }
+          const [store, method, key] = entry;
           const args = Array.isArray(body.args) ? body.args : [];
-          const result = await store[body.action](...args);
-          const payload =
-            body.action === "list" ? { ok: true, posts: result }
-            : body.action === "delete" ? { ok: true }
-            : { ok: true, post: result };
+          const result = await store[method](...args);
+          const payload = key ? { ok: true, [key]: result } : { ok: true };
           return sendJson(res, 200, payload);
         } catch (error) {
           if (error instanceof StudioError) {

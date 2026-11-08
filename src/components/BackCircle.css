@@ -42,8 +42,14 @@
   box-shadow: 0 0 24px rgba(27, 204, 254, 0.15);
 }
 
+/* Phones: the navbar has its own back button (Navbar.jsx), except on blog
+   posts, where the navbar scrolls away and this pinned one is used. */
 @media (max-width: 640px) {
   .back-circle {
+    display: none;
+  }
+  .back-circle.back-circle--keep {
+    display: flex;
     top: 5.5rem;
     left: 1rem;
     width: 36px;

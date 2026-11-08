@@ -25,6 +25,7 @@ import {
   Undo2,
 } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
+import WorksStudio from "./studio/WorksStudio";
 import CoverCropper from "../components/CoverCropper";
 import {
   HIGHLIGHTS,
@@ -969,7 +970,16 @@ function PostEditor({
   );
 }
 
+const SECTIONS = [
+  { key: "posts", label: "Blog posts" },
+  { key: "works", label: "Projects" },
+  { key: "featured", label: "Home featured" },
+];
+
 export default function AdminPage({ initialPosts = [], loadError = null }) {
+  // Which studio section is open (blog posts, projects, home page picks).
+  const [section, setSection] = useState("posts");
+  const [worksEditing, setWorksEditing] = useState(false);
   const [posts, setPosts] = useState(initialPosts);
   const [listError, setListError] = useState(loadError);
   const [listLoading, setListLoading] = useState(false);
@@ -1264,8 +1274,8 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
   const publishedCount = posts.filter((post) => post.status === "published").length;
 
   return (
-    <main className={`admin-page${editing ? " admin-page-editing" : ""}`}>
-      {!editing ? (
+    <main className={`admin-page${editing || worksEditing ? " admin-page-editing" : ""}`}>
+      {!editing && !worksEditing ? (
         <aside className="admin-sidebar">
           <div className="admin-brand">
             <a href="/" className="admin-brand-link">
@@ -1274,6 +1284,22 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
             <span className="admin-brand-sub">Studio</span>
           </div>
 
+          <nav className="admin-sidebar-nav" aria-label="Studio sections">
+            {SECTIONS.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={section === item.key ? "is-active" : ""}
+                aria-current={section === item.key ? "page" : undefined}
+                onClick={() => setSection(item.key)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          {section === "posts" ? (
+          <>
           <button
             type="button"
             className="admin-primary admin-new"
@@ -1300,10 +1326,16 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
               <strong>{posts.length - publishedCount}</strong>
             </div>
           </div>
+          </>
+          ) : null}
 
           <div className="admin-sidebar-label">Quick links</div>
 
           <div className="admin-sidebar-links">
+            <a href="/works">
+              <span>View works</span>
+              <span aria-hidden="true">↗</span>
+            </a>
             <a href="/blogs">
               <span>View blog</span>
               <span aria-hidden="true">↗</span>
@@ -1330,7 +1362,9 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
       ) : null}
 
       <section className="admin-main">
-        {editing ? (
+        {section !== "posts" ? (
+          <WorksStudio section={section} onEditingChange={setWorksEditing} />
+        ) : editing ? (
           <PostEditor
             key={editing.id}
             post={editing}

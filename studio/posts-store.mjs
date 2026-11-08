@@ -203,7 +203,7 @@ export function createPostStore(root) {
   };
 }
 
-// ─── Cover uploads → public/blog/<uuid>.<ext> ────────────────────────────────
+// ─── Image uploads → public/<folder>/<uuid>.<ext> (blog covers, project images)
 
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const EXT_BY_TYPE = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
@@ -219,13 +219,16 @@ function sniffImageType(b) {
   return null;
 }
 
-export async function saveCover(root, bytes) {
+const UPLOAD_FOLDERS = new Set(["blog", "works"]);
+
+export async function saveCover(root, bytes, folder = "blog") {
+  if (!UPLOAD_FOLDERS.has(folder)) throw new StudioError("Unknown upload folder.");
   if (bytes.length > MAX_UPLOAD_BYTES) throw new StudioError("Image is larger than 4 MB.", 413);
   const type = sniffImageType(bytes);
   if (!type) throw new StudioError("Only JPEG, PNG or WebP images are allowed.", 415);
   const name = `${randomUUID()}.${EXT_BY_TYPE[type]}`;
-  const dir = path.join(root, "public", "blog");
+  const dir = path.join(root, "public", folder);
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, name), bytes);
-  return { url: `/blog/${name}` };
+  return { url: `/${folder}/${name}` };
 }

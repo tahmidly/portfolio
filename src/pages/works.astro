@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import WorksPage from "../views/WorksPage.jsx";
-import { works } from "../data/portfolio";
+import { getPublishedWorks } from "../lib/works";
 
+// Every published project from src/content/works/, newest first.
+const works = await getPublishedWorks();
 const description =
   "A selection of projects I've worked on, from concept to launch.";
 ---

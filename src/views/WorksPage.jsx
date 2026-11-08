@@ -1,9 +1,9 @@
 import BackCircle from "../components/BackCircle";
-import { WorkCardContent, workLinkProps } from "../components/WorkCard";
+import { formatPostDate } from "../lib/format";
 import "./BlogsPage.css";
 import "./WorksPage.css";
 
-// Same layout as the blogs page.
+// All published projects as a list, in the same style as the blogs page.
 export default function WorksPage({ works = [] }) {
   return (
     <main className="blogs-page works-page">
@@ -29,16 +29,55 @@ export default function WorksPage({ works = [] }) {
       </section>
 
       <section className="blogs-list-section">
-        <div className="works-page-inner">
+        <div className="blogs-inner">
           {works.length === 0 ? (
             <p className="blogs-empty">New projects are on the way.</p>
           ) : (
-            <div className="bento-grid">
-              {works.map((work, index) => (
-                <a key={work.id} id={work.id} {...workLinkProps(work)}>
-                  <WorkCardContent work={work} eager={index < 2} />
-                </a>
-              ))}
+            <div className="blogs-list">
+              {works.map((work, index) => {
+                const external = /^https?:\/\//i.test(work.url);
+                const Card = work.url ? "a" : "div";
+                return (
+                  <Card
+                    key={work.id}
+                    id={work.slug}
+                    className="blog-card work-row"
+                    {...(work.url
+                      ? {
+                          href: work.url,
+                          ...(external ? { target: "_blank", rel: "noopener noreferrer" } : {}),
+                          "aria-label": `${work.title} — open project`,
+                        }
+                      : {})}
+                  >
+                    <div className={`work-row-thumb ${work.placeholder}`}>
+                      {work.image ? (
+                        <img
+                          src={work.image}
+                          alt={work.alt}
+                          className="placeholder-img"
+                          loading={index < 3 ? "eager" : "lazy"}
+                          decoding="async"
+                        />
+                      ) : null}
+                    </div>
+                    <div className="blog-content">
+                      <div className="blog-meta">
+                        {work.tag ? <span>{work.tag}</span> : null}
+                        {work.tag ? <span className="blog-dot" /> : null}
+                        <time dateTime={work.date}>{formatPostDate(work.date)}</time>
+                      </div>
+                      <h2 className="blog-title">{work.title}</h2>
+                      <p className="blog-excerpt">{work.description}</p>
+                    </div>
+                    {work.url ? (
+                      <span className="blog-arrow" aria-hidden="true">
+                        ↗
+                      </span>
+                    ) : null}
+                  </Card>
+                );
+              })}
             </div>
           )}
 

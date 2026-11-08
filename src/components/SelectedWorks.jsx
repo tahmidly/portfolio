@@ -3,10 +3,11 @@ import { navigate } from "astro:transitions/client";
 import SectionHeader from "./SectionHeader";
 import Reveal from "./Reveal";
 import { WorkCardContent, workLinkProps } from "./WorkCard";
-import { works } from "../data/portfolio";
 import "./SelectedWorks.css";
 
-export default function SelectedWorks() {
+// `works`: the 3 projects picked in the studio ("Home featured"), each with
+// its grid width (`span`). Passed in by src/pages/index.astro.
+export default function SelectedWorks({ works = [] }) {
   // "View all work" is a button, not a link, so it isn't prefetched on hover.
   // astro:prefetch is browser-only, so load it lazily (not during SSR).
   useEffect(() => {
