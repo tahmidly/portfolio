@@ -5,9 +5,17 @@
     "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": [".astro/types.d.ts", "src", "worker-configuration.d.ts"],
-  "exclude": ["dist", "legacy"]
+  "include": [
+    ".astro/types.d.ts",
+    "src"
+  ],
+  "exclude": [
+    "dist",
+    "legacy"
+  ]
 }

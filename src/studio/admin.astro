@@ -5,7 +5,8 @@ import AdminPage from "../views/AdminPage.jsx";
 import "../styles/tailwind.css";
 import "../styles/base.css";
 
-export const prerender = false;
+// Only injected during `astro dev` (where every page renders on request).
+export const prerender = true;
 ---
 
 <!doctype html>

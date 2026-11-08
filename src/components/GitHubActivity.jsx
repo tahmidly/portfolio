@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "../lib/gsap";
 import "./GitHubActivity.css";
 
-const GITHUB_USERNAME = import.meta.env.PUBLIC_GITHUB_USERNAME || "";
+// Override with PUBLIC_GITHUB_USERNAME if needed.
+const GITHUB_USERNAME = import.meta.env.PUBLIC_GITHUB_USERNAME || "tahmidly";
 
 function GitHubIcon() {
   return (

@@ -1,8 +1,0 @@
-{
-  // Cloudflare Workers config. The Astro adapter fills in `main` and the
-  // static assets binding automatically. The site is fully static.
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "meer-tahmid",
-  "compatibility_date": "2026-11-01",
-  "observability": { "enabled": true }
-}

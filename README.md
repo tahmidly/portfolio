@@ -1,7 +1,7 @@
 # Meer Tahmid — Portfolio + Blog
 
-Astro 7 portfolio (React islands) with a Markdown blog, deployed to
-**Cloudflare Workers** as a fully static site.
+Astro 7 portfolio (React islands) with a Markdown blog, built as a fully
+static site and deployed to **Vercel**.
 
 - **Blog:** one Markdown file per post in `src/content/blog/`. The file name is
   the URL: `src/content/blog/my-post.md` → `/blogs/my-post`.
@@ -54,7 +54,7 @@ npm run dev                  # http://localhost:4321
 | Variable | Purpose |
 | --- | --- |
 | `PUBLIC_SITE_URL` | Optional override of the site URL (default `https://meer.men`, set as `site` in `astro.config.mjs`) |
-| `PUBLIC_GITHUB_USERNAME` | Optional, for the contribution graph |
+| `PUBLIC_GITHUB_USERNAME` | Optional override for the contribution graph (default `tahmidly`) |
 
 ## Scripts
 
@@ -63,22 +63,23 @@ npm run dev                  # http://localhost:4321
 | `npm run dev` | Astro dev server |
 | `npm run build` | Production build into `dist/` |
 | `npm run preview` | Serve the production build locally |
-| `npm run deploy` | Build and `wrangler deploy` |
 
-## Deployment (Cloudflare Workers)
+## Deployment (Vercel)
 
-1. `npx wrangler login`
-2. Add `meer.men` to your Cloudflare account and attach it to the Worker as a
-   custom domain (Workers → meer-tahmid → Settings → Domains & Routes).
-   Optionally set `PUBLIC_GITHUB_USERNAME` in the build environment.
-3. `npm run deploy`
-4. Submit `https://<domain>/sitemap.xml` in Google Search Console.
+The site is fully static (`dist/`). Vercel detects Astro automatically
+(build `npm run build`, output `dist`); Node 22 comes from `engines` in
+`package.json`. No environment variables are required.
+
+1. vercel.com → Add New → Project → import `tahmidly/portfolio` → Deploy.
+2. Every push to `main` redeploys.
+3. Project → Settings → Domains → add `meer.men` (and `www.meer.men`), then
+   add the DNS records Vercel shows at your domain registrar.
+4. Submit `https://meer.men/sitemap.xml` in Google Search Console.
 
 ## Structure
 
 ```
-astro.config.mjs          adapter, React, Tailwind, prefetch
-wrangler.jsonc            Worker name and compatibility date
+astro.config.mjs          site URL, React, Tailwind, prefetch, studio
 src/content.config.js     blog collection schema (frontmatter fields)
 src/content/blog/         one .md file per post
 src/layouts/BaseLayout.astro  <head>, SEO tags, ClientRouter, navbar
