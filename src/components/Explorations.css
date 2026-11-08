@@ -115,8 +115,9 @@
 }
 
 /* ─── Phones: compact layout ───
-   Heading on top, then a tight 2-column photo grid. No sticky overlay, no
-   1250px minimum height, no parallax (that left a big empty gap). */
+   Heading on top, then a tight 2-column photo grid with a small parallax
+   drift. No sticky overlay and no 1250px minimum height (that left a big
+   empty gap). */
 @media (max-width: 640px) {
   .explorations {
     min-height: 0;
@@ -136,7 +137,8 @@
   }
   .gallery-cols {
     gap: 0.75rem;
-    padding: 2rem 1rem 0;
+    /* Room for the parallax drift above and below. */
+    padding: 3.5rem 1rem 2.5rem;
   }
   .gallery-col {
     gap: 0.75rem;
