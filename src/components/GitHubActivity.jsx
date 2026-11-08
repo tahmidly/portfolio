@@ -94,7 +94,6 @@ function formatDate(isoDate) {
 export default function GitHubActivity() {
   const [data, setData] = useState(buildDemoData);
   const gridRef = useRef(null);
-  const scrollRef = useRef(null);
 
   useEffect(() => {
     if (!GITHUB_USERNAME) return undefined;
@@ -113,12 +112,6 @@ export default function GitHubActivity() {
       active = false;
     };
   }, []);
-
-  // On narrow screens only part of the year fits: start at the newest weeks.
-  useEffect(() => {
-    const scroller = scrollRef.current;
-    if (scroller) scroller.scrollLeft = scroller.scrollWidth;
-  }, [data]);
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -162,7 +155,7 @@ export default function GitHubActivity() {
         <span className="github-activity-total">{contributionLabel}</span>
       </div>
 
-      <div className="github-activity-scroll" ref={scrollRef}>
+      <div className="github-activity-scroll">
         <div
           className="github-activity-grid"
           ref={gridRef}

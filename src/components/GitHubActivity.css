@@ -162,27 +162,22 @@
     padding: 0.75rem;
     border-radius: 0.9rem;
   }
-  .github-activity-header {
-    flex-wrap: wrap;
-    row-gap: 0.3rem;
-  }
-  /* Bigger cells; the grid opens scrolled to the newest weeks (see JSX) and
-     fades out on the left to show there is more. Swipe to see older weeks. */
   .github-activity-grid {
-    --cell: 7px;
-    --gap: 2px;
+    --cell: 4px;
+    --gap: 1.5px;
   }
   .github-activity-scroll {
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%);
-    mask-image: linear-gradient(to right, transparent, #000 14%);
   }
   .github-activity-scroll::-webkit-scrollbar {
     display: none;
   }
   .github-activity-total {
-    font-size: 9px;
+    display: none;
+  }
+  .github-activity-legend {
+    display: none;
   }
 }
