@@ -1,12 +1,16 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "../lib/gsap";
 import { BACKGROUND_VIDEO } from "../lib/videos";
+import useInViewVideo from "../hooks/useInViewVideo";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import { socialLinks } from "../data/portfolio";
 import "./Contact.css";
 
 export default function Contact() {
   const trackRef = useRef(null);
+  const videoRef = useRef(null);
+  // Footer video: only downloaded/played once you scroll near the footer.
+  useInViewVideo(videoRef, { lazySrc: BACKGROUND_VIDEO });
 
   useEffect(() => {
     const track = trackRef.current;
@@ -29,12 +33,13 @@ export default function Contact() {
     <section className="contact" id="contact">
       <div className="footer-video-wrap">
         <video
+          ref={videoRef}
           className="footer-video"
-          src={BACKGROUND_VIDEO}
-          autoPlay
+          preload="none"
           muted
           loop
           playsInline
+          aria-hidden="true"
         />
         <div className="footer-overlay" />
       </div>

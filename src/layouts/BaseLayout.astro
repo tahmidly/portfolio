@@ -1,5 +1,5 @@
 ---
-import { ClientRouter } from "astro:transitions";
+import { ClientRouter, fade } from "astro:transitions";
 import Navbar from "../components/Navbar.jsx";
 import { DEFAULT_OG_IMAGE, SITE_URL, absoluteUrl } from "../lib/site";
 import "../styles/tailwind.css";
@@ -30,11 +30,12 @@ const hasOwnImage = Boolean(og.images?.length);
 const ogImages = hasOwnImage
   ? og.images
   : [{ ...DEFAULT_OG_IMAGE, url: absoluteUrl(DEFAULT_OG_IMAGE.url) }];
-// transition:animate="none" on <html>: no crossfade, pages swap instantly.
+// Short crossfade between pages: smooth, without slowing clicks down.
+const pageFade = fade({ duration: "0.2s" });
 ---
 
 <!doctype html>
-<html lang="en" transition:animate="none">
+<html lang="en" transition:animate={pageFade}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

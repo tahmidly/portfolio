@@ -34,9 +34,12 @@ export default function PageLoader({ progress, done, onExited }) {
     return () => clearTimeout(timer);
   }, [done, shown, onExited]);
 
-  // Lock scrolling while the loader is up.
+  // Lock scrolling while the loader is up. Not on a return visit to Home
+  // (html.booted): the loader is hidden then, and locking would make the
+  // scrollbar flicker.
   useEffect(() => {
     const root = document.documentElement;
+    if (root.classList.contains("booted")) return undefined;
     const previous = root.style.overflow;
     root.style.overflow = "hidden";
     return () => {

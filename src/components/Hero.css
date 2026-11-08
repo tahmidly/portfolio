@@ -212,3 +212,11 @@
   background: linear-gradient(90deg, #1bccfe, #0a9fcb);
   animation: scroll-down 1.5s ease-in-out infinite;
 }
+
+/* Returning to Home in the same tab (html.booted, set by the head script in
+   BaseLayout before paint): show the hero text at once instead of waiting
+   for the intro animation / hydration. */
+html.booted .hero-eyebrow,
+html.booted .hero-name {
+  opacity: 1;
+}

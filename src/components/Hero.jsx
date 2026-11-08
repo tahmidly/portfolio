@@ -4,6 +4,7 @@ import { BACKGROUND_VIDEO } from "../lib/videos";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import GitHubActivity from "./GitHubActivity";
 import PageLoader from "./PageLoader";
+import useInViewVideo from "../hooks/useInViewVideo";
 import "./Hero.css";
 
 // Survives client-side navigation (Astro's <ClientRouter /> keeps the page's
@@ -20,7 +21,6 @@ function markBooted() {
 
 const MIN_LOADER_MS = 600;
 const MAX_LOADER_MS = 3500;
-const REVISIT_MAX_MS = 1200;
 
 export default function Hero() {
   const sectionRef = useRef(null);
@@ -32,13 +32,22 @@ export default function Hero() {
   const [showLoader, setShowLoader] = useState(true);
   const [progress, setProgress] = useState(10);
   const [ready, setReady] = useState(false);
+  // Coming back to Home in the same tab: show the hero at once (no loader,
+  // no waiting for the video, no replayed intro).
+  const revisitRef = useRef(false);
+  // Pause the hero video once it is scrolled out of view.
+  useInViewVideo(videoRef);
 
   // Wait for the display font and the first video frames (capped so a slow
   // stream never blocks the page), then release the intro.
   useEffect(() => {
     let cancelled = false;
-    const firstLoad = !hasBooted;
-    if (!firstLoad) setShowLoader(false);
+    if (hasBooted) {
+      revisitRef.current = true;
+      setShowLoader(false);
+      setReady(true);
+      return undefined;
+    }
     const bump = (amount) => {
       if (!cancelled) setProgress((value) => Math.min(95, value + amount));
     };
@@ -62,8 +71,8 @@ export default function Hero() {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     Promise.race([
-      Promise.all([fonts, videoReady, wait(firstLoad ? MIN_LOADER_MS : 0)]),
-      wait(firstLoad ? MAX_LOADER_MS : REVISIT_MAX_MS),
+      Promise.all([fonts, videoReady, wait(MIN_LOADER_MS)]),
+      wait(MAX_LOADER_MS),
     ]).then(() => {
       if (cancelled) return;
       markBooted();
@@ -83,6 +92,10 @@ export default function Hero() {
   const handleLoaderExited = useCallback(() => setShowLoader(false), []);
 
   useEffect(() => {
+    // Returning to Home: no intro at all. Building it would hide the text for
+    // a frame (fromTo starts at opacity 0) and cause a visible blink.
+    if (revisitRef.current) return undefined;
+
     const context = gsap.context(() => {
       const timeline = gsap.timeline({
         paused: true,

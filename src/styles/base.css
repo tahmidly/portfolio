@@ -32,6 +32,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Always keep room for the scrollbar so the page never shifts sideways
+     when it appears or disappears (e.g. while the intro loader is up). */
+  scrollbar-gutter: stable;
 }
 
 body {
