@@ -9,6 +9,8 @@ import Stats from "../components/Stats.jsx";
 import Contact from "../components/Contact.jsx";
 import { placeholderFor } from "../components/CoverImage.jsx";
 import { formatPostDate, getPublishedPosts } from "../lib/blog";
+import { AUTHOR, SITE_URL, absoluteUrl } from "../lib/site";
+import { socialLinks } from "../data/portfolio";
 
 // Latest 4 posts from src/content/blog/ for the Journal section.
 const posts = await getPublishedPosts();
@@ -21,9 +23,28 @@ const entries = posts.slice(0, 4).map((post) => ({
   alt: post.coverAlt,
   placeholder: placeholderFor(post.slug),
 }));
+
+// Structured data so Google knows who the site belongs to (name, links).
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: AUTHOR,
+    url: SITE_URL,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: AUTHOR,
+    url: SITE_URL,
+    image: absoluteUrl("/logo-mark.png"),
+    jobTitle: "Frontend Developer",
+    sameAs: socialLinks.map((link) => link.url),
+  },
+];
 ---
 
-<BaseLayout canonical="/">
+<BaseLayout canonical="/" jsonLd={jsonLd}>
   <main>
     <Hero client:load />
     <SelectedWorks client:load />

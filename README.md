@@ -45,7 +45,7 @@ Requires Node 22.12+.
 
 ```bash
 npm install
-cp .env.example .env.local   # set PUBLIC_SITE_URL (optional)
+cp .env.example .env.local   # optional
 npm run dev                  # http://localhost:4321
 ```
 
@@ -53,7 +53,7 @@ npm run dev                  # http://localhost:4321
 
 | Variable | Purpose |
 | --- | --- |
-| `PUBLIC_SITE_URL` | Canonical site URL (meta, sitemap, RSS, JSON-LD) |
+| `PUBLIC_SITE_URL` | Optional override of the site URL (default `https://meer.men`, set as `site` in `astro.config.mjs`) |
 | `PUBLIC_GITHUB_USERNAME` | Optional, for the contribution graph |
 
 ## Scripts
@@ -68,8 +68,9 @@ npm run dev                  # http://localhost:4321
 ## Deployment (Cloudflare Workers)
 
 1. `npx wrangler login`
-2. Set `PUBLIC_SITE_URL` (and optionally `PUBLIC_GITHUB_USERNAME`) in the build
-   environment, e.g. `.env` locally or the Workers Builds settings.
+2. Add `meer.men` to your Cloudflare account and attach it to the Worker as a
+   custom domain (Workers → meer-tahmid → Settings → Domains & Routes).
+   Optionally set `PUBLIC_GITHUB_USERNAME` in the build environment.
 3. `npm run deploy`
 4. Submit `https://<domain>/sitemap.xml` in Google Search Console.
 

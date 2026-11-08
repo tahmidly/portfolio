@@ -10,7 +10,9 @@ import localStudio from "./studio/integration.mjs";
 const { PUBLIC_SITE_URL } = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 
 export default defineConfig({
-  site: PUBLIC_SITE_URL || "http://localhost:4321",
+  // The live domain. Used for canonical URLs, sitemap, RSS, Open Graph and
+  // structured data (import.meta.env.SITE). PUBLIC_SITE_URL can override it.
+  site: PUBLIC_SITE_URL || "https://meer.men",
   // Every public page is prerendered to static HTML (posts come from
   // Markdown files in src/content/blog/). Cloudflare serves them as static
   // assets.

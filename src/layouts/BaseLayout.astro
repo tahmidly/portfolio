@@ -1,7 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import Navbar from "../components/Navbar.jsx";
-import { SITE_URL, absoluteUrl } from "../lib/site";
+import { DEFAULT_OG_IMAGE, SITE_URL, absoluteUrl } from "../lib/site";
 import "../styles/tailwind.css";
 import "../styles/base.css";
 
@@ -25,7 +25,11 @@ const canonicalUrl = canonical ? absoluteUrl(canonical) : undefined;
 const pathname = Astro.url.pathname;
 const ogTitle = og.title ?? title ?? DEFAULT_TITLE;
 const ogDescription = og.description ?? description;
-const ogImages = og.images ?? [];
+// Pages without their own image (home, works, blogs) share the logo mark.
+const hasOwnImage = Boolean(og.images?.length);
+const ogImages = hasOwnImage
+  ? og.images
+  : [{ ...DEFAULT_OG_IMAGE, url: absoluteUrl(DEFAULT_OG_IMAGE.url) }];
 // transition:animate="none" on <html>: no crossfade, pages swap instantly.
 ---
 
@@ -73,7 +77,7 @@ const ogImages = og.images ?? [];
           ))}
           <meta
             name="twitter:card"
-            content={twitter?.card ?? (ogImages.length ? "summary_large_image" : "summary")}
+            content={twitter?.card ?? (hasOwnImage ? "summary_large_image" : "summary")}
           />
           <meta name="twitter:title" content={ogTitle} />
           <meta name="twitter:description" content={ogDescription} />
