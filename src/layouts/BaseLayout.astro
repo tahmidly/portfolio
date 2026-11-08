@@ -118,7 +118,9 @@ const pageFade = fade({ duration: "0.2s" });
         function apply() {
           var root = document.documentElement;
           var path = location.pathname;
-          var themed = path.indexOf("/blogs/") === 0;
+          // Blog posts only ("/blogs/<slug>"), not the "/blogs/" list.
+          var post = path.replace(/\/+$/, "");
+          var themed = post.indexOf("/blogs/") === 0 && post.length > 7;
           var light = false;
           try {
             light = themed && localStorage.getItem("blog-theme") === "light";

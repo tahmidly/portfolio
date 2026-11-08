@@ -44,7 +44,7 @@ export default function BlogPostPage({ post, previous = null, next = null, child
     <main className="post-page">
       <div className="post-glow" aria-hidden="true" />
 
-      <BackCircle to="/blogs" label="Back to blogs" keepOnMobile />
+      <BackCircle to="/blogs" label="Back to blogs" />
 
       <article className="post-article">
         <header>

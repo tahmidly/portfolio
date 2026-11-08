@@ -222,6 +222,14 @@
   .nav-round-spacer {
     visibility: hidden;
   }
+  /* Blog post pages: the navbar scrolls away, but its back button stays
+     pinned to the top-left corner. */
+  .navbar--static .nav-back {
+    position: fixed;
+    top: 0.85rem;
+    left: 0.75rem;
+    z-index: 60;
+  }
 
   /* Center pill with the page links. */
   .nav-mobile-links {

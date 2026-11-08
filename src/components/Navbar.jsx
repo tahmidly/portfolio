@@ -5,8 +5,20 @@ import { navLinks, socialLinks } from "../data/portfolio";
 import "./Navbar.css";
 
 /** Fallback for the back button: a post → its list, a list → home. */
+/** A single blog post: "/blogs/<slug>" (not the "/blogs" list itself). */
+function isBlogPost(pathname) {
+  return pathname.startsWith("/blogs/") && pathname.length > "/blogs/".length;
+}
+
+/** Drop trailing slashes: hosts like Vercel serve "/blogs/" for "/blogs". */
+function trimSlash(pathname) {
+  let path = pathname;
+  while (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+  return path;
+}
+
 function parentPath(pathname) {
-  if (pathname.startsWith("/blogs/")) return "/blogs";
+  if (isBlogPost(pathname)) return "/blogs";
   return "/";
 }
 
@@ -43,7 +55,8 @@ function CloseIcon() {
 // Desktop: the pill. Phones (≤ 640px):
 //   [back]   [Home · Works · Blogs]   [logo]
 // (The ☰ button + right-side drawer are commented out for now.)
-export default function Navbar({ pathname = "/" }) {
+export default function Navbar({ pathname: rawPathname = "/" }) {
+  const pathname = trimSlash(rawPathname);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("hero");
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -51,9 +64,9 @@ export default function Navbar({ pathname = "/" }) {
   const onHome = pathname === "/";
   const onBlogs = pathname.startsWith("/blogs");
   const onWorks = pathname === "/works";
-  // Blog post reading page: the navbar scrolls away (not sticky); the page's
-  // own back button and theme toggle stay pinned instead.
-  const reading = pathname.startsWith("/blogs/");
+  // Blog post reading page: the navbar scrolls away (not sticky); its back
+  // button and the page's theme toggle stay pinned instead.
+  const reading = isBlogPost(pathname);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 100);
@@ -203,13 +216,11 @@ export default function Navbar({ pathname = "/" }) {
 
       {/* ─── Phone bar ─── */}
       <div className="nav-mobile">
-        {!reading ? (
-          <button type="button" className="nav-round" aria-label="Go back" onClick={goBack}>
-            <BackIcon />
-          </button>
-        ) : (
-          <span className="nav-round nav-round-spacer" aria-hidden="true" />
-        )}
+        {/* Always shown. On blog posts it stays pinned while the rest of the
+            navbar scrolls away (see .navbar--static in Navbar.css). */}
+        <button type="button" className="nav-round nav-back" aria-label="Go back" onClick={goBack}>
+          <BackIcon />
+        </button>
 
         <div className={`nav-mobile-links${scrolled ? " scrolled" : ""}`}>
           <a href="/" className={`nav-link${onHome ? " active" : ""}`} onClick={goHomeTop}>
