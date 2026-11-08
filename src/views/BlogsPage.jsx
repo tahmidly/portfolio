@@ -1,4 +1,3 @@
-import Link from "next/link";
 import BackCircle from "../components/BackCircle";
 import BlogsVideo from "../components/BlogsVideo";
 import CoverImage, { CoverFallback, placeholderFor } from "../components/CoverImage";
@@ -38,7 +37,7 @@ export default function BlogsPage({ posts = [] }) {
           ) : (
             <div className="blogs-list">
               {posts.map((post, index) => (
-                <Link
+                <a
                   key={post.id}
                   id={post.slug}
                   href={`/blogs/${post.slug}`}
@@ -73,15 +72,15 @@ export default function BlogsPage({ posts = [] }) {
                   <span className="blog-arrow" aria-hidden="true">
                     ↗
                   </span>
-                </Link>
+                </a>
               ))}
             </div>
           )}
 
           <footer className="blogs-footer">
-            <Link href="/" className="blogs-footer-link">
+            <a href="/" className="blogs-footer-link">
               ← Back home
-            </Link>
+            </a>
             <span>© {new Date().getFullYear()} Meer Tahmid</span>
           </footer>
         </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import Reveal from "./Reveal";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import "./SectionHeader.css";

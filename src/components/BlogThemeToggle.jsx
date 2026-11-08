@@ -1,37 +1,34 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
 
 const THEME_KEY = "blog-theme";
 
+// The inline head script in BaseLayout applies html.light before paint (and
+// after every client-side swap); this island only takes over once hydrated.
 export default function BlogThemeToggle() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(null);
 
   useEffect(() => {
-    try {
-      setTheme(localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark");
-    } catch {
-      setTheme("dark");
-    }
+    setTheme(
+      document.documentElement.classList.contains("light") ? "light" : "dark",
+    );
   }, []);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("light", theme === "light");
+    if (!theme) return;
+    document.documentElement.classList.toggle("light", theme === "light");
     try {
       localStorage.setItem(THEME_KEY, theme);
     } catch {
       // ignore storage failures
     }
-    return () => root.classList.remove("light");
   }, [theme]);
 
   return (
     <ThemeToggle
-      theme={theme}
+      theme={theme ?? "dark"}
       onToggle={() =>
-        setTheme((current) => (current === "dark" ? "light" : "dark"))
+        setTheme((current) => (current === "light" ? "dark" : "light"))
       }
     />
   );

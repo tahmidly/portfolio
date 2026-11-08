@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BlogPostPage from "../../../views/BlogPostPage.jsx";
+import NotFoundPage from "../../../views/NotFoundPage.jsx";
+import BlogThemeToggle from "../../../components/BlogThemeToggle.jsx";
+import { getPostById } from "../../../lib/posts";
+
+// Auth-protected (src/middleware.js) draft preview: renders exactly like the
+// public post page.
+const post = await getPostById(Astro.params.id);
+if (!post) Astro.response.status = 404;
+---
+
+<BaseLayout title="Preview" noindex variant="admin">
+  {
+    post ? (
+      <>
+        <BlogPostPage post={post} preview />
+        <BlogThemeToggle client:load />
+      </>
+    ) : (
+      <NotFoundPage />
+    )
+  }
+</BaseLayout>

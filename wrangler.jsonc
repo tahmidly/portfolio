@@ -1,0 +1,20 @@
+{
+  // Cloudflare Workers config. The Astro adapter fills in `main` and the
+  // static assets binding automatically.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "meer-tahmid",
+  "compatibility_date": "2026-11-01",
+  // node:crypto (password check) and AsyncLocalStorage (request auth scope).
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Cover image uploads. Create the bucket once with:
+  //   npx wrangler r2 bucket create meer-tahmid-uploads
+  "r2_buckets": [
+    { "binding": "UPLOADS", "bucket_name": "meer-tahmid-uploads" }
+  ]
+
+  // Secrets are NOT stored here. Set them with `npx wrangler secret put <NAME>`:
+  //   DATABASE_URL, ADMIN_PASSWORD, AUTH_SECRET
+  // Locally they are read from .env.local (or .dev.vars).
+}

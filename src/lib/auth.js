@@ -1,22 +1,23 @@
-import "server-only";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { SESSION_COOKIE, verifySessionToken } from "./session";
+import { getEnv } from "./env";
 
-export async function isAdmin() {
-  const store = await cookies();
-  return verifySessionToken(store.get(SESSION_COOKIE)?.value);
+// The middleware verifies the session cookie once per request and runs the
+// rest of the request inside this store, so the data layer (src/lib/posts.js)
+// can enforce auth without being handed the request.
+const requestAuth = new AsyncLocalStorage();
+
+export function runWithAuth(state, fn) {
+  return requestAuth.run(state, fn);
 }
 
-/** Use in admin pages: redirects to the login page when signed out. */
-export async function requireAdminPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+export function isAdmin() {
+  return requestAuth.getStore()?.isAdmin === true;
 }
 
-/** Use in server actions / route handlers / data layer: throws when signed out. */
-export async function requireAdmin() {
-  if (!(await isAdmin())) {
+/** Use in endpoints / data layer: throws when signed out. */
+export function requireAdmin() {
+  if (!isAdmin()) {
     const error = new Error("Unauthorized");
     error.status = 401;
     throw error;
@@ -28,7 +29,7 @@ function digest(value) {
 }
 
 export function checkPassword(candidate) {
-  const expected = process.env.ADMIN_PASSWORD;
+  const expected = getEnv("ADMIN_PASSWORD");
   if (!expected || expected.length < 8) {
     throw new Error("ADMIN_PASSWORD must be set (8+ characters).");
   }

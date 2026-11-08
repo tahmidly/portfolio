@@ -1,20 +1,16 @@
-"use client";
-
 import { useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { navigate } from "astro:transitions/client";
 import SectionHeader from "./SectionHeader";
 import Reveal from "./Reveal";
 import { CoverFallback } from "./CoverImage";
 import "./Journal.css";
 
 export default function Journal({ entries = [] }) {
-  const router = useRouter();
-
-  // "View all" is a button, not a <Link>, so it isn't prefetched automatically.
+  // "View all" is a button, not a link, so it isn't prefetched on hover.
+  // astro:prefetch is browser-only, so load it lazily (not during SSR).
   useEffect(() => {
-    router.prefetch("/blogs");
-  }, [router]);
+    import("astro:prefetch").then(({ prefetch }) => prefetch("/blogs"));
+  }, []);
 
   return (
     <section className="journal" id="journal">
@@ -29,7 +25,7 @@ export default function Journal({ entries = [] }) {
           subtitle="Perspectives on design, technology, and the craft of building things."
           action="View all →"
           actionVariant="shimmer"
-          actionOnClick={() => router.push("/blogs")}
+          actionOnClick={() => navigate("/blogs")}
         />
 
         {entries.length === 0 ? (
@@ -48,7 +44,7 @@ export default function Journal({ entries = [] }) {
         <div className="journal-list">
           {entries.map((entry) => (
             <Reveal
-              as={Link}
+              as="a"
               key={entry.id}
               href={`/blogs/${entry.id}`}
               className="journal-entry"

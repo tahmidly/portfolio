@@ -1,0 +1,43 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.jsx";
+import SelectedWorks from "../components/SelectedWorks.jsx";
+import Journal from "../components/Journal.jsx";
+import Explorations from "../components/Explorations.jsx";
+import TechStack from "../components/TechStack.jsx";
+import Stats from "../components/Stats.jsx";
+import Contact from "../components/Contact.jsx";
+import { placeholderFor } from "../components/CoverImage.jsx";
+import { formatPostDate } from "../lib/content";
+import { getPublishedPosts } from "../lib/posts";
+
+let posts = [];
+try {
+  posts = await getPublishedPosts();
+} catch (error) {
+  // The portfolio still renders if the database is unreachable.
+  console.error("[home] failed to load posts", error);
+}
+
+const entries = posts.slice(0, 4).map((post) => ({
+  id: post.slug,
+  title: post.title,
+  readTime: post.readingTime,
+  date: formatPostDate(post.publishedAt),
+  image: post.coverUrl,
+  alt: post.coverAlt || post.title,
+  placeholder: placeholderFor(post.slug),
+}));
+---
+
+<BaseLayout canonical="/">
+  <main>
+    <Hero client:load />
+    <SelectedWorks client:load />
+    <Journal client:load entries={entries} />
+    <Explorations client:load />
+    <TechStack />
+    <Stats client:load />
+    <Contact client:load />
+  </main>
+</BaseLayout>

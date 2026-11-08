@@ -1,16 +1,22 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "../lib/gsap";
-// Background video disabled for now.
-// import { BACKGROUND_VIDEO } from "../lib/videos";
+import { BACKGROUND_VIDEO } from "../lib/videos";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import GitHubActivity from "./GitHubActivity";
 import PageLoader from "./PageLoader";
 import "./Hero.css";
 
-// Survives client-side navigation, so the loader only shows on first load.
+// Survives client-side navigation (Astro's <ClientRouter /> keeps the page's
+// JS alive), so the loader only shows on a full page load. window.__mtBooted
+// also lets the inline head script in BaseLayout hide the server-rendered
+// loader (html.booted) before paint when navigating back home.
 let hasBooted = false;
+
+function markBooted() {
+  hasBooted = true;
+  window.__mtBooted = true;
+  document.documentElement.classList.add("booted");
+}
 
 const MIN_LOADER_MS = 600;
 const MAX_LOADER_MS = 3500;
@@ -21,7 +27,9 @@ export default function Hero() {
   const videoRef = useRef(null);
   const timelineRef = useRef(null);
 
-  const [showLoader, setShowLoader] = useState(() => !hasBooted);
+  // Always true on the first render so it matches the server HTML; dropped
+  // right after hydration when the intro already ran in this tab.
+  const [showLoader, setShowLoader] = useState(true);
   const [progress, setProgress] = useState(10);
   const [ready, setReady] = useState(false);
 
@@ -30,6 +38,7 @@ export default function Hero() {
   useEffect(() => {
     let cancelled = false;
     const firstLoad = !hasBooted;
+    if (!firstLoad) setShowLoader(false);
     const bump = (amount) => {
       if (!cancelled) setProgress((value) => Math.min(95, value + amount));
     };
@@ -57,7 +66,7 @@ export default function Hero() {
       wait(firstLoad ? MAX_LOADER_MS : REVISIT_MAX_MS),
     ]).then(() => {
       if (cancelled) return;
-      hasBooted = true;
+      markBooted();
       setReady(true);
     });
 
@@ -112,7 +121,6 @@ export default function Hero() {
       ) : null}
 
       <div className="hero-video-wrap">
-        {/* Background video disabled for now.
         <video
           ref={videoRef}
           className="hero-video"
@@ -123,7 +131,6 @@ export default function Hero() {
           loop
           playsInline
         />
-        */}
         <div className="hero-overlay" />
         <div className="hero-fade-bottom" />
       </div>

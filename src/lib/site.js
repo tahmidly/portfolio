@@ -1,5 +1,6 @@
+// PUBLIC_SITE_URL is inlined at build time (set it in .env / the build env).
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  import.meta.env.PUBLIC_SITE_URL || "http://localhost:4321"
 ).replace(/\/$/, "");
 
 export const AUTHOR = "Meer Tahmid";

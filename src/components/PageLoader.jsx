@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import "./PageLoader.css";
 
@@ -58,7 +56,6 @@ export default function PageLoader({ progress, done, onExited }) {
       <div className="page-loader-inner">
         <div className="page-loader-mark" aria-hidden="true">
           <span className="page-loader-ring" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo-mark.png"
             alt=""

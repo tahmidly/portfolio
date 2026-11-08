@@ -1,11 +1,8 @@
-"use client";
-
-import Link from "next/link";
 import "./BackCircle.css";
 
 export default function BackCircle({ to, label }) {
   return (
-    <Link href={to} className="back-circle" aria-label={label}>
+    <a href={to} className="back-circle" aria-label={label}>
       <svg
         width="16"
         height="16"
@@ -20,6 +17,6 @@ export default function BackCircle({ to, label }) {
         <path d="M19 12H5" />
         <path d="M12 19l-7-7 7-7" />
       </svg>
-    </Link>
+    </a>
   );
 }

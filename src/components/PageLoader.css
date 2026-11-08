@@ -125,3 +125,9 @@
     transition-duration: 0.2s;
   }
 }
+
+/* Intro already played in this tab (set by Hero / BaseLayout head script):
+   hide the server-rendered loader before React hydrates. */
+html.booted .page-loader {
+  display: none;
+}

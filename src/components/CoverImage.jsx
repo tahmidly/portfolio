@@ -1,13 +1,8 @@
-import Image from "next/image";
-
-// Hosts allowed in next.config.mjs images.remotePatterns get optimized
-// (AVIF/WebP, responsive sizes). Anything else is served as-is.
-const OPTIMIZABLE = [/^\/uploads\//, /^https:\/\/images\.unsplash\.com\//];
-
+// Plain <img>: covers are already resized/cropped in the studio.
 export default function CoverImage({ src, alt, className, sizes, width, height, eager }) {
   if (!src) return null;
   return (
-    <Image
+    <img
       src={src}
       alt={alt || ""}
       className={className}
@@ -15,8 +10,8 @@ export default function CoverImage({ src, alt, className, sizes, width, height, 
       height={height}
       sizes={sizes}
       loading={eager ? "eager" : "lazy"}
+      decoding="async"
       fetchPriority={eager ? "high" : undefined}
-      unoptimized={!OPTIMIZABLE.some((pattern) => pattern.test(src))}
     />
   );
 }

@@ -1,6 +1,4 @@
-import Link from "next/link";
 import BackCircle from "../components/BackCircle";
-import BlogThemeToggle from "../components/BlogThemeToggle";
 import CoverImage, { CoverFallback, placeholderFor } from "../components/CoverImage";
 import PostContent from "../components/PostContent";
 import { formatPostDate } from "../lib/content";
@@ -9,7 +7,7 @@ import "./BlogPostPage.css";
 function PostNavCard({ post, direction }) {
   const isNext = direction === "next";
   return (
-    <Link
+    <a
       href={`/blogs/${post.slug}`}
       className={`post-nav-card ${isNext ? "is-next" : "is-previous"}`}
       rel={isNext ? "next" : "prev"}
@@ -34,7 +32,7 @@ function PostNavCard({ post, direction }) {
         </span>
         <span className="post-nav-title">{post.title}</span>
       </div>
-    </Link>
+    </a>
   );
 }
 
@@ -48,7 +46,6 @@ export default function BlogPostPage({ post, previous = null, next = null, previ
       <div className="post-glow" aria-hidden="true" />
 
       <BackCircle to={preview ? "/admin" : "/blogs"} label={preview ? "Back to studio" : "Back to blogs"} />
-      <BlogThemeToggle />
 
       {preview ? (
         <p className="post-preview-banner">

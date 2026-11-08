@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogsPage from "../../views/BlogsPage.jsx";
+import { getPublishedPosts } from "../../lib/posts";
+
+const posts = await getPublishedPosts();
+const description =
+  "Perspectives on design, technology, and the craft of building things.";
+---
+
+<BaseLayout
+  title="Blogs"
+  description={description}
+  canonical="/blogs"
+  og={{ title: "Blogs — Meer Tahmid", description }}
+  rss
+>
+  <BlogsPage posts={posts} />
+</BaseLayout>

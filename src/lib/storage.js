@@ -1,11 +1,8 @@
-import "server-only";
-import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { getEnv } from "./env";
 
-// Cover image storage. Today: local disk, served by src/app/uploads/[name]/route.js.
-// To move to Cloudflare R2 (or S3) later, replace saveImage/readImage only —
-// callers just get back a public URL to store in posts.cover_url.
+// Cover image storage: Cloudflare R2 (binding `UPLOADS` in wrangler.jsonc),
+// served by src/pages/uploads/[name].js. Locally, `astro dev` emulates the
+// bucket on disk under .wrangler/state.
 
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024; // 4 MB
 export const ALLOWED_TYPES = {
@@ -16,9 +13,10 @@ export const ALLOWED_TYPES = {
 const MIME_BY_EXT = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" };
 export const UPLOAD_NAME = /^[a-z0-9-]+\.(jpg|png|webp)$/;
 
-function uploadsDir() {
-  // Statically scoped so the bundler only traces this folder.
-  return path.join(process.cwd(), "storage", "uploads");
+function bucket() {
+  const binding = getEnv("UPLOADS");
+  if (!binding) throw new Error("R2 binding UPLOADS is not configured.");
+  return binding;
 }
 
 /** Detects the real image type from magic bytes (never trust the browser). */
@@ -41,19 +39,14 @@ export function sniffImageType(bytes) {
 export async function saveImage(bytes, type) {
   const ext = ALLOWED_TYPES[type];
   if (!ext) throw new Error("Unsupported image type.");
-  const name = `${randomUUID()}.${ext}`;
-  const dir = uploadsDir();
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, name), bytes);
+  const name = `${crypto.randomUUID()}.${ext}`;
+  await bucket().put(name, bytes, { httpMetadata: { contentType: type } });
   return { url: `/uploads/${name}` };
 }
 
 export async function readImage(name) {
   if (!UPLOAD_NAME.test(name)) return null;
-  try {
-    const bytes = await readFile(path.join(uploadsDir(), name));
-    return { bytes, type: MIME_BY_EXT[name.split(".").pop()] };
-  } catch {
-    return null;
-  }
+  const object = await bucket().get(name);
+  if (!object) return null;
+  return { body: object.body, type: MIME_BY_EXT[name.split(".").pop()] };
 }

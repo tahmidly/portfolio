@@ -1,5 +1,6 @@
-// Edge/Node-safe session token helpers (Web Crypto only, no Next imports),
-// so both proxy.js and server code can verify the same cookie.
+// Session token helpers (Web Crypto only), shared by the middleware and the
+// login endpoint so both verify the same cookie.
+import { getEnv } from "./env";
 
 export const SESSION_COOKIE = "mt_session";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
@@ -19,7 +20,7 @@ function fromBase64Url(value) {
 }
 
 async function getKey() {
-  const secret = process.env.AUTH_SECRET;
+  const secret = getEnv("AUTH_SECRET");
   if (!secret || secret.length < 32) {
     throw new Error("AUTH_SECRET must be set to at least 32 characters.");
   }

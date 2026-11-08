@@ -1,5 +1,3 @@
-import "server-only";
-import { cache } from "react";
 import { and, desc, eq, like, ne, or } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "./db";
@@ -59,16 +57,16 @@ const summaryColumns = {
 
 // ─── Public (published only) ─────────────────────────────────────────────────
 
-export const getPublishedPosts = cache(async () => {
+export async function getPublishedPosts() {
   const rows = await getDb()
     .select(summaryColumns)
     .from(posts)
     .where(eq(posts.status, "published"))
     .orderBy(desc(posts.publishedAt));
   return rows.map(toPost);
-});
+}
 
-export const getPublishedPostBySlug = cache(async (slug) => {
+export async function getPublishedPostBySlug(slug) {
   if (typeof slug !== "string" || slug !== slugify(slug)) return null;
   const [row] = await getDb()
     .select()
@@ -76,10 +74,10 @@ export const getPublishedPostBySlug = cache(async (slug) => {
     .where(and(eq(posts.slug, slug), eq(posts.status, "published")))
     .limit(1);
   return toPost(row);
-});
+}
 
 /** Current slug for an old slug, if the post is still published. */
-export const getRedirectedSlug = cache(async (slug) => {
+export async function getRedirectedSlug(slug) {
   if (typeof slug !== "string" || slug !== slugify(slug)) return null;
   const [row] = await getDb()
     .select({ slug: posts.slug })
@@ -90,7 +88,7 @@ export const getRedirectedSlug = cache(async (slug) => {
     )
     .limit(1);
   return row?.slug && row.slug !== slug ? row.slug : null;
-});
+}
 
 // ─── Admin (auth enforced here, not only in the UI) ──────────────────────────
 

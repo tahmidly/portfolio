@@ -1,7 +1,4 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
-import NextLink from "next/link";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
@@ -44,7 +41,7 @@ import {
   publishPostAction,
   savePostAction,
   unpublishPostAction,
-} from "../app/admin/actions";
+} from "../lib/adminActions";
 import { confirmDanger, promptLink, showError, showToast } from "../lib/dialogs";
 import "./AdminPage.css";
 
@@ -1217,9 +1214,9 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
       {!editing ? (
         <aside className="admin-sidebar">
           <div className="admin-brand">
-            <NextLink href="/" className="admin-brand-link">
+            <a href="/" className="admin-brand-link">
               ← Meer Tahmid
-            </NextLink>
+            </a>
             <span className="admin-brand-sub">Studio</span>
           </div>
 
@@ -1253,14 +1250,14 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
           <div className="admin-sidebar-label">Quick links</div>
 
           <div className="admin-sidebar-links">
-            <NextLink href="/blogs">
+            <a href="/blogs">
               <span>View blog</span>
               <span aria-hidden="true">↗</span>
-            </NextLink>
-            <NextLink href="/">
+            </a>
+            <a href="/">
               <span>Portfolio</span>
               <span aria-hidden="true">↗</span>
-            </NextLink>
+            </a>
           </div>
 
           <div className="admin-sidebar-rule">

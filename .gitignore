@@ -3,8 +3,12 @@ dist
 dist-ssr
 *.local
 .DS_Store
-.next
-next-env.d.ts
+
+# Astro / Cloudflare
+.astro
+.wrangler
+.dev.vars*
+worker-configuration.d.ts
 
 # env & local data
 .env

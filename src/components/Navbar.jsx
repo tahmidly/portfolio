@@ -1,24 +1,22 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { navigate } from "astro:transitions/client";
 import { ScrollTrigger } from "../lib/gsap";
 import { navLinks } from "../data/portfolio";
 import "./Navbar.css";
 
-export default function Navbar() {
+// Persisted across client-side navigations (transition:persist in
+// BaseLayout); `pathname` is re-passed by each page.
+export default function Navbar({ pathname = "/" }) {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("hero");
-  const pathname = usePathname();
-  const router = useRouter();
+  const onBlogs = pathname.startsWith("/blogs");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 100);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     const worksSection = document.querySelector("#works");
@@ -50,27 +48,17 @@ export default function Navbar() {
     };
   }, [pathname]);
 
-  // Section buttons navigate home with router.push, which doesn't prefetch.
-  useEffect(() => {
-    if (pathname !== "/") router.prefetch("/");
-  }, [pathname, router]);
-
   const handleNavClick = (sectionId) => {
     setActive(sectionId);
     if (pathname !== "/") {
-      router.push(sectionId === "hero" ? "/" : `/#${sectionId}`);
+      navigate(sectionId === "hero" ? "/" : `/#${sectionId}`);
       return;
     }
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <nav
-      className={`navbar${
-        pathname.startsWith("/blogs") ? " navbar--static" : ""
-      }`}
-      id="navbar"
-    >
+    <nav className={`navbar${onBlogs ? " navbar--static" : ""}`} id="navbar">
       <div className={`nav-pill${scrolled ? " scrolled" : ""}`}>
         <div className="nav-logo" aria-label="Meer Tahmid">
           <img
@@ -93,14 +81,9 @@ export default function Navbar() {
             {link.label}
           </button>
         ))}
-        <Link
-          href="/blogs"
-          className={`nav-link${
-            pathname.startsWith("/blogs") ? " active" : ""
-          }`}
-        >
+        <a href="/blogs" className={`nav-link${onBlogs ? " active" : ""}`}>
           Blogs
-        </Link>
+        </a>
         <div className="nav-divider" />
         <div className="nav-sayhi">
           <div className="nav-sayhi-bg" />

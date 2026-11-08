@@ -1,5 +1,3 @@
-"use client";
-
 // SweetAlert2 dialogs styled to the studio (see .swal-studio in AdminPage.css).
 // Loaded on demand so it never weighs on the initial bundle.
 
