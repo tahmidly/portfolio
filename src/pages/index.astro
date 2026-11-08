@@ -8,24 +8,17 @@ import TechStack from "../components/TechStack.jsx";
 import Stats from "../components/Stats.jsx";
 import Contact from "../components/Contact.jsx";
 import { placeholderFor } from "../components/CoverImage.jsx";
-import { formatPostDate } from "../lib/content";
-import { getPublishedPosts } from "../lib/posts";
+import { formatPostDate, getPublishedPosts } from "../lib/blog";
 
-let posts = [];
-try {
-  posts = await getPublishedPosts();
-} catch (error) {
-  // The portfolio still renders if the database is unreachable.
-  console.error("[home] failed to load posts", error);
-}
-
+// Latest 4 posts from src/content/blog/ for the Journal section.
+const posts = await getPublishedPosts();
 const entries = posts.slice(0, 4).map((post) => ({
   id: post.slug,
   title: post.title,
   readTime: post.readingTime,
   date: formatPostDate(post.publishedAt),
   image: post.coverUrl,
-  alt: post.coverAlt || post.title,
+  alt: post.coverAlt,
   placeholder: placeholderFor(post.slug),
 }));
 ---

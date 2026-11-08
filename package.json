@@ -1,5 +1,5 @@
 {
-  "name": "alex-sinyo-portfolio",
+  "name": "meer-tahmid-portfolio",
   "private": true,
   "type": "module",
   "version": "1.0.0",
@@ -8,26 +8,24 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
-    "cf-typegen": "wrangler types",
-    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
-    "db:seed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file-if-exists=.env.local scripts/seed.mjs"
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.6",
     "@astrojs/react": "^7.1.4",
-    "@neondatabase/serverless": "^1.2.0",
     "@tailwindcss/vite": "^4.3.5",
     "@tiptap/core": "^3.33.0",
     "@tiptap/extension-highlight": "^3.33.0",
     "@tiptap/extension-link": "^3.33.0",
     "@tiptap/extension-placeholder": "^3.33.0",
     "@tiptap/extension-underline": "^3.33.0",
+    "@tiptap/markdown": "^3.33.0",
+    "@tiptap/pm": "^3.33.0",
     "@tiptap/react": "^3.33.0",
     "@tiptap/starter-kit": "^3.33.0",
     "astro": "^7.4.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.4",
     "gsap": "^3.12.5",
     "lucide-react": "^1.70.0",
     "motion": "^14.10.1",
@@ -37,7 +35,7 @@
     "sweetalert2": "^11.26.25",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.5",
-    "zod": "^4.6.7"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "wrangler": "^4.158.0"

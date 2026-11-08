@@ -1,4 +1,4 @@
-// Plain <img>: covers are already resized/cropped in the studio.
+// Plain <img> for post covers.
 export default function CoverImage({ src, alt, className, sizes, width, height, eager }) {
   if (!src) return null;
   return (

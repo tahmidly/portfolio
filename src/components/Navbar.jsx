@@ -10,6 +10,7 @@ export default function Navbar({ pathname = "/" }) {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("hero");
   const onBlogs = pathname.startsWith("/blogs");
+  const onWorks = pathname === "/works";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 100);
@@ -58,7 +59,10 @@ export default function Navbar({ pathname = "/" }) {
   };
 
   return (
-    <nav className={`navbar${onBlogs ? " navbar--static" : ""}`} id="navbar">
+    <nav
+      className={`navbar${onBlogs || onWorks ? " navbar--static" : ""}`}
+      id="navbar"
+    >
       <div className={`nav-pill${scrolled ? " scrolled" : ""}`}>
         <div className="nav-logo" aria-label="Meer Tahmid">
           <img
@@ -81,6 +85,9 @@ export default function Navbar({ pathname = "/" }) {
             {link.label}
           </button>
         ))}
+        <a href="/works" className={`nav-link${onWorks ? " active" : ""}`}>
+          Works
+        </a>
         <a href="/blogs" className={`nav-link${onBlogs ? " active" : ""}`}>
           Blogs
         </a>

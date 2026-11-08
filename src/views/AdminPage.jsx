@@ -4,6 +4,7 @@ import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Markdown } from "@tiptap/markdown";
 import { Mark, mergeAttributes } from "@tiptap/core";
 import {
   ArrowLeft,
@@ -15,7 +16,6 @@ import {
   Link as LinkIcon,
   List,
   ListOrdered,
-  LogOut,
   Pencil,
   Plus,
   Redo2,
@@ -27,12 +27,12 @@ import {
 import ThemeToggle from "../components/ThemeToggle";
 import CoverCropper from "../components/CoverCropper";
 import {
-  EMPTY_DOC,
   HIGHLIGHTS,
   estimateReadingTime,
   formatPostDate,
+  highlightKey,
   slugify,
-} from "../lib/content";
+} from "../lib/studio";
 import {
   createPostAction,
   deletePostAction,
@@ -46,7 +46,6 @@ import { confirmDanger, promptLink, showError, showToast } from "../lib/dialogs"
 import "./AdminPage.css";
 
 const THEME_KEY = "admin-theme";
-const AUTOSAVE_MS = 600;
 // Originals can be large; the cropper resizes and compresses below the 4 MB upload limit.
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 const UPLOAD_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -69,17 +68,54 @@ const TextSize = Mark.create({
   renderHTML({ HTMLAttributes }) {
     return ["span", mergeAttributes(HTMLAttributes), 0];
   },
+  // Markdown has no font sizes, so keep them as inline HTML in the .md body.
+  renderMarkdown(node, helpers) {
+    const size = node.attrs?.size;
+    const inner = helpers.renderChildren(node);
+    if (!size || size === "md") return inner;
+    return `<span data-size="${size}" class="post-size-${size}">${inner}</span>`;
+  },
 });
 
+// Highlight colors as inline HTML too (Markdown `==text==` has no color).
+const ColorHighlight = Highlight.extend({
+  renderMarkdown(node, helpers) {
+    const color = node.attrs?.color || HIGHLIGHTS[0].color;
+    return `<mark data-color="${color}" class="post-mark post-mark-${highlightKey(color)}">${helpers.renderChildren(node)}</mark>`;
+  },
+});
+
+// No autosave: changes are written only when you press Save / Publish.
 function saveLabel(state) {
   if (state === "saving") return "Saving…";
   if (state === "saved") return "Saved";
   if (state === "error") return "Save failed";
-  return "All changes saved";
+  if (state === "dirty") return "Unsaved changes";
+  return "No changes";
 }
 
+/** A new post that exists only in the studio until its first save. */
+function blankPost() {
+  return {
+    id: null,
+    slug: "",
+    title: "",
+    excerpt: "",
+    content: "",
+    coverUrl: "",
+    coverAlt: "",
+    coverWidth: null,
+    coverHeight: null,
+    readingTime: "",
+    status: "draft",
+    publishedAt: null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+// The studio runs locally (no sign-in); kept so callers stay unchanged.
 function goToLogin() {
-  window.location.assign("/admin/login");
+  window.location.reload();
 }
 
 /** Editable fields sent on every autosave (full state, not patches). */
@@ -88,9 +124,8 @@ function editableFields(post) {
     title: post.title,
     excerpt: post.excerpt,
     slug: post.slug,
-    // ProseMirror attrs are null-prototype objects, which server actions can't
-    // serialize as plain data — send a plain JSON copy.
-    content: JSON.parse(JSON.stringify(post.content)),
+    // Markdown body of the .md file.
+    content: post.content || "",
     coverUrl: post.coverUrl,
     coverWidth: post.coverWidth ?? null,
     coverHeight: post.coverHeight ?? null,
@@ -100,7 +135,7 @@ function editableFields(post) {
 
 /** Blank read time = "auto" (server estimates it from the body). */
 function toEditable(post) {
-  const content = post.content || EMPTY_DOC;
+  const content = post.content || "";
   return {
     ...post,
     content,
@@ -256,12 +291,10 @@ function Dashboard({ posts, loading, error, onRetry, onCreate, onEdit, onDelete,
         </div>
       )}
 
-      <form method="post" action="/api/auth/logout" className="admin-note">
-        Posts are stored in the database and published to /blogs instantly.{" "}
-        <button type="submit" className="admin-link-button admin-mobile-signout">
-          Sign out
-        </button>
-      </form>
+      <p className="admin-note">
+        Posts are saved as Markdown files in src/content/blog. Commit and deploy
+        to publish them on the live site.
+      </p>
     </div>
   );
 }
@@ -290,13 +323,15 @@ function PostEditor({
           HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
         },
       }),
-      Highlight.configure({ multicolor: true }),
+      ColorHighlight.configure({ multicolor: true }),
       Placeholder.configure({
         placeholder: "Start writing. Select text to format it…",
       }),
       TextSize,
+      Markdown,
     ],
-    content: post.content || EMPTY_DOC,
+    content: post.content || "",
+    contentType: "markdown",
     editorProps: {
       attributes: {
         class: "admin-tiptap",
@@ -304,7 +339,7 @@ function PostEditor({
       },
     },
     onUpdate: ({ editor: currentEditor }) => {
-      onChange({ content: currentEditor.getJSON() });
+      onChange({ content: currentEditor.getMarkdown() });
     },
   });
 
@@ -425,7 +460,12 @@ function PostEditor({
       const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : "jpg";
       const body = new FormData();
       body.append("file", new File([blob], `cover.${ext}`, { type: blob.type }));
-      const response = await fetch("/api/admin/upload", { method: "POST", body });
+      const response = await fetch("/api/studio/upload", {
+        method: "POST",
+        // Custom header = CORS preflight, so other sites can't post here.
+        headers: { "X-Studio": "1" },
+        body,
+      });
       if (response.status === 401) return goToLogin();
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Upload failed.");
@@ -914,17 +954,7 @@ function PostEditor({
               <Eye size={14} />
               View post
             </a>
-          ) : (
-            <a
-              className="admin-secondary"
-              href={`/admin/preview/${post.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Eye size={14} />
-              Preview
-            </a>
-          )}
+          ) : null}
           <button
             type="button"
             className={wantsPublished ? "admin-primary" : "admin-secondary admin-save-draft"}
@@ -995,6 +1025,10 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
     setPosts(result.posts);
   }, []);
 
+  useEffect(() => {
+    refreshList();
+  }, [refreshList]);
+
   const upsertSummary = useCallback((post) => {
     setPosts((current) => {
       const summary = summaryOf(post);
@@ -1014,7 +1048,23 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
 
       setSaveState("saving");
       const sent = editableFields(post);
-      const result = await savePostAction(post.id, sent);
+
+      // New post: create its .md file now (first explicit save).
+      let id = post.id;
+      if (!id) {
+        const created = await createPostAction();
+        if (!created.ok) {
+          setSaveState("error");
+          setEditorError(created.error);
+          return;
+        }
+        id = created.post.id;
+        editingRef.current = { ...editingRef.current, id };
+        setEditing((current) => (current && !current.id ? { ...current, id } : current));
+        setUrlPost(id);
+      }
+
+      const result = await savePostAction(id, sent);
       if (result.unauthorized) return goToLogin();
       if (!result.ok) {
         setSaveState("error");
@@ -1026,9 +1076,10 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
       setEditorError("");
       upsertSummary(result.post);
       setEditing((current) => {
-        if (!current || current.id !== result.post.id) return current;
+        if (!current || (current.id && current.id !== result.post.id)) return current;
         const next = {
           ...current,
+          id: result.post.id,
           status: result.post.status,
           publishedAt: result.post.publishedAt,
           updatedAt: result.post.updatedAt,
@@ -1041,13 +1092,6 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
     });
     return saveChainRef.current;
   }, [upsertSummary]);
-
-  useEffect(() => {
-    if (!editing || versionRef.current === savedVersionRef.current) return undefined;
-    setSaveState("saving");
-    const timer = window.setTimeout(flushSave, AUTOSAVE_MS);
-    return () => window.clearTimeout(timer);
-  }, [editing, flushSave]);
 
   // Warn before leaving with unsaved edits.
   useEffect(() => {
@@ -1063,6 +1107,7 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
 
   const updateEditing = (patch) => {
     versionRef.current += 1;
+    setSaveState("dirty");
     setEditing((current) => (current ? { ...current, ...patch } : current));
   };
 
@@ -1102,28 +1147,31 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
   }, [openPost]);
 
   const closeEditor = async () => {
-    await flushSave();
+    if (versionRef.current !== savedVersionRef.current) {
+      const discard = await confirmDanger({
+        title: "Discard unsaved changes?",
+        text: "You have changes that aren’t saved. Press Save draft / Update post to keep them.",
+        confirmText: "Discard changes",
+      });
+      if (!discard) return;
+      versionRef.current = savedVersionRef.current;
+    }
+    setSaveState("idle");
     setEditing(null);
     setEditorError("");
     setEditorErrorList([]);
     setUrlPost(null);
   };
 
-  const createPost = async () => {
-    setCreating(true);
-    const result = await createPostAction();
-    setCreating(false);
-    if (result.unauthorized) return goToLogin();
-    if (!result.ok) {
-      setListError(result.error);
-      return;
-    }
-    upsertSummary(result.post);
+  // The .md file is only created when the new post is saved the first time.
+  const createPost = () => {
     versionRef.current = 0;
     savedVersionRef.current = 0;
     setSaveState("idle");
-    setEditing(toEditable(result.post));
-    setUrlPost(result.post.id);
+    setEditorError("");
+    setEditorErrorList([]);
+    setEditing(blankPost());
+    setUrlPost(null);
   };
 
   const removePost = async (post) => {
@@ -1135,6 +1183,11 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
       confirmText: "Delete post",
     });
     if (!confirmed) return;
+    if (!post.id) {
+      versionRef.current = savedVersionRef.current;
+      backToList();
+      return;
+    }
     const result = await deletePostAction(post.id);
     if (result.unauthorized) return goToLogin();
     if (!result.ok) {
@@ -1166,11 +1219,12 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
       return;
     }
 
+    const id = editingRef.current?.id;
     let result;
     if (target === "published") {
-      result = await publishPostAction(editing.id);
+      result = await publishPostAction(id);
     } else if (wasPublished) {
-      result = await unpublishPostAction(editing.id);
+      result = await unpublishPostAction(id);
     } else {
       setPublishing(false);
       showToast("Draft saved");
@@ -1269,14 +1323,8 @@ export default function AdminPage({ initialPosts = [], loadError = null }) {
           </div>
 
           <div className="admin-sidebar-foot">
-            <span className="admin-save-state saved">Connected</span>
-            <p>Posts live in the database. Publishing updates /blogs instantly.</p>
-            <form method="post" action="/api/auth/logout">
-              <button type="submit" className="admin-secondary admin-signout">
-                <LogOut size={14} />
-                Sign out
-              </button>
-            </form>
+            <span className="admin-save-state saved">Local</span>
+            <p>Posts are Markdown files in src/content/blog. Commit and deploy to publish.</p>
           </div>
         </aside>
       ) : null}

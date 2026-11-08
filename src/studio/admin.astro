@@ -1,0 +1,29 @@
+---
+// Local writing studio. Injected only during `astro dev` by
+// studio/integration.mjs — not part of the production build.
+import AdminPage from "../views/AdminPage.jsx";
+import "../styles/tailwind.css";
+import "../styles/base.css";
+
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Studio — Meer Tahmid</title>
+    <link rel="icon" type="image/png" href="/logo-mark.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Questrial&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <AdminPage client:only="react" />
+  </body>
+</html>

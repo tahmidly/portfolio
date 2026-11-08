@@ -80,7 +80,8 @@
   max-width: 720px;
   margin: 0 auto;
 }
-.post-p {
+.post-p,
+.post-content p {
   font-family: var(--font-reading);
   font-size: 18px;
   line-height: 32px;
@@ -90,13 +91,14 @@
   margin-bottom: 1.6rem;
   text-wrap: pretty;
 }
-.light .post-p {
+.light .post-p,
+.light .post-content p {
   color: #2d2d2d;
 }
 .light .post-glow {
   opacity: 0.55;
 }
-.post-h2 {
+.post-content h2 {
   font-family: var(--font-title);
   font-size: 30px;
   line-height: 54px;
@@ -105,7 +107,7 @@
   color: #e5e5e5;
   margin: 3rem 0 1.2rem;
 }
-.light .post-h2 {
+.light .post-content h2 {
   color: #2d2d2d;
 }
 
@@ -139,14 +141,15 @@
   .post-cover {
     aspect-ratio: 4 / 3;
   }
-  .post-p {
+  .post-p,
+  .post-content p {
     font-size: 18px;
     line-height: 32px;
   }
 }
 
-/* ─── Rich content from the studio (fonts/colors stay fixed) ─── */
-.post-h3 {
+/* ─── Markdown post body (fonts/colors stay fixed) ─── */
+.post-content h3 {
   font-family: var(--font-title);
   font-size: 22px;
   line-height: 1.4;
@@ -154,11 +157,11 @@
   color: #e5e5e5;
   margin: 2.25rem 0 0.9rem;
 }
-.light .post-h3 {
+.light .post-content h3 {
   color: #2d2d2d;
 }
-.post-ul,
-.post-ol {
+.post-content ul,
+.post-content ol {
   font-family: var(--font-reading);
   font-size: 18px;
   line-height: 32px;
@@ -167,54 +170,52 @@
   margin: 0 0 1.6rem;
   padding-left: 1.5rem;
 }
-.post-ul {
+.post-content ul {
   list-style: disc;
 }
-.post-ol {
+.post-content ol {
   list-style: decimal;
 }
-.light .post-ul,
-.light .post-ol {
+.light .post-content ul,
+.light .post-content ol {
   color: #2d2d2d;
 }
-.post-ul li,
-.post-ol li {
+.post-content li {
   margin-bottom: 0.4rem;
 }
-.post-ul li::marker,
-.post-ol li::marker {
+.post-content li::marker {
   color: var(--muted);
 }
-.post-li-p {
+.post-content li p {
   margin-bottom: 0.35rem;
 }
-.post-quote {
+.post-content blockquote {
   margin: 2rem 0;
   padding-left: 1.25rem;
   border-left: 2px solid var(--accent);
 }
-.post-quote .post-p {
+.post-content blockquote p {
   margin-bottom: 0.8rem;
 }
-.post-quote .post-p:last-child {
+.post-content blockquote p:last-child {
   margin-bottom: 0;
 }
-.post-link {
+.post-content a {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 3px;
   overflow-wrap: anywhere;
 }
-.post-code {
+.post-content :not(pre) > code {
   padding: 0.1rem 0.35rem;
   border-radius: 0.3rem;
   background: rgba(255, 255, 255, 0.08);
   font-size: 0.85em;
 }
-.light .post-code {
+.light .post-content :not(pre) > code {
   background: rgba(0, 0, 0, 0.06);
 }
-.post-pre {
+.post-content pre {
   margin: 0 0 1.6rem;
   padding: 1rem 1.1rem;
   overflow-x: auto;
@@ -225,48 +226,40 @@
   font-size: 0.85rem;
   line-height: 1.6;
 }
-.light .post-pre {
+.light .post-content pre {
   background: #f4f4f4;
   color: #2d2d2d;
 }
-.post-hr {
+.post-content hr {
   margin: 2.5rem 0;
   border: none;
   border-top: 1px solid var(--stroke);
 }
-.post-mark {
+
+
+/* Highlights and text sizes from the studio (inline HTML in the .md body). */
+.post-content .post-mark {
   padding: 0 0.15em;
   border-radius: 0.2em;
   color: inherit;
 }
-.post-mark-cyan {
+.post-content .post-mark-cyan {
   background: rgba(27, 204, 254, 0.25);
 }
-.post-mark-yellow {
+.post-content .post-mark-yellow {
   background: rgba(250, 204, 21, 0.28);
 }
-.post-mark-pink {
+.post-content .post-mark-pink {
   background: rgba(244, 114, 182, 0.26);
 }
-.post-mark-gray {
+.post-content .post-mark-gray {
   background: rgba(163, 163, 163, 0.22);
 }
-.post-size-sm {
+.post-content .post-size-sm {
   font-size: 16px;
 }
-.post-size-lg {
+.post-content .post-size-lg {
   font-size: 22px;
-}
-.post-preview-banner {
-  position: relative;
-  z-index: 2;
-  max-width: 900px;
-  margin: 0 auto 1.5rem;
-  padding: 0.6rem 0.9rem;
-  border: 1px dashed var(--accent);
-  border-radius: 0.7rem;
-  font-size: 0.75rem;
-  color: var(--muted);
 }
 
 /* ─── Previous / next post navigation ─── */

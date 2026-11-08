@@ -1,0 +1,10 @@
+/* Works page: blogs page layout with a wider grid for the project cards. */
+
+.works-page-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.works-page .work-card {
+  scroll-margin-top: 7rem;
+}

@@ -4,8 +4,6 @@ export const GET = () =>
   new Response(
     `User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /api/
 
 Host: ${SITE_URL}
 Sitemap: ${SITE_URL}/sitemap.xml

@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import WorksPage from "../views/WorksPage.jsx";
+import { works } from "../data/portfolio";
+
+const description =
+  "A selection of projects I've worked on, from concept to launch.";
+---
+
+<BaseLayout
+  title="Works"
+  description={description}
+  canonical="/works"
+  og={{ title: "Works — Meer Tahmid", description }}
+>
+  <WorksPage works={works} />
+</BaseLayout>

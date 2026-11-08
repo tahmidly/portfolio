@@ -1,4 +1,4 @@
-import { getPublishedPosts } from "../../lib/posts";
+import { getPublishedPosts } from "../../lib/blog";
 import { AUTHOR, SITE_URL, absoluteUrl } from "../../lib/site";
 
 const escape = (value = "") =>

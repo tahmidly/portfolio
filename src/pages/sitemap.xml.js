@@ -1,4 +1,4 @@
-import { getPublishedPosts } from "../lib/posts";
+import { getPublishedPosts } from "../lib/blog";
 import { SITE_URL } from "../lib/site";
 
 const entry = ({ url, lastModified, changeFrequency, priority }) => `  <url>
@@ -19,6 +19,7 @@ export const GET = async () => {
 
   const urls = [
     { url: SITE_URL, lastModified: newestUpdate, changeFrequency: "monthly", priority: 1 },
+    { url: `${SITE_URL}/works`, lastModified: newestUpdate, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/blogs`, lastModified: newestUpdate, changeFrequency: "weekly", priority: 0.8 },
     ...posts.map((post) => ({
       url: `${SITE_URL}/blogs/${post.slug}`,

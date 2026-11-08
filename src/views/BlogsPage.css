@@ -1,31 +1,26 @@
 .blogs-page {
   position: relative;
   min-height: 100vh;
+  overflow: hidden;
   background: var(--bg);
 }
 
-.blogs-video-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-.blogs-video {
+/* Soft accent glow behind the header (blogs + works pages). */
+.page-glow {
   position: absolute;
-  top: 50%;
+  top: -18rem;
   left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: cover;
-}
-.blogs-video-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(4, 6, 10, 0.62);
+  z-index: 0;
+  width: min(900px, 120vw);
+  height: 36rem;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(27, 204, 254, 0.14),
+    transparent 65%
+  );
+  pointer-events: none;
 }
 
 .blogs-hero {

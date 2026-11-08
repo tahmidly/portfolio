@@ -1,7 +1,6 @@
 import BackCircle from "../components/BackCircle";
 import CoverImage, { CoverFallback, placeholderFor } from "../components/CoverImage";
-import PostContent from "../components/PostContent";
-import { formatPostDate } from "../lib/content";
+import { formatPostDate } from "../lib/blog";
 import "./BlogPostPage.css";
 
 function PostNavCard({ post, direction }) {
@@ -36,22 +35,16 @@ function PostNavCard({ post, direction }) {
   );
 }
 
-export default function BlogPostPage({ post, previous = null, next = null, preview = false }) {
+// `children` is the rendered Markdown body (passed in from the .astro page).
+export default function BlogPostPage({ post, previous = null, next = null, children }) {
   if (!post) return null;
-  // Covers cropped in the studio keep their chosen ratio; older ones stay 16:9.
   const hasDims = Boolean(post.coverWidth && post.coverHeight);
 
   return (
     <main className="post-page">
       <div className="post-glow" aria-hidden="true" />
 
-      <BackCircle to={preview ? "/admin" : "/blogs"} label={preview ? "Back to studio" : "Back to blogs"} />
-
-      {preview ? (
-        <p className="post-preview-banner">
-          Preview — this is how the post will look. Status: {post.status}.
-        </p>
-      ) : null}
+      <BackCircle to="/blogs" label="Back to blogs" />
 
       <article className="post-article">
         <header>
@@ -84,7 +77,7 @@ export default function BlogPostPage({ post, previous = null, next = null, previ
           </div>
         ) : null}
 
-        <PostContent doc={post.content} />
+        <div className="post-content">{children}</div>
 
         {previous || next ? (
           <nav className="post-nav" aria-label="More posts">

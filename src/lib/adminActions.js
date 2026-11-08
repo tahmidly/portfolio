@@ -1,19 +1,17 @@
-// Client-side wrappers for the studio. Same names and return shape as the old
-// Next.js server actions, backed by POST /api/admin/posts.
+// Studio → local API (studio/integration.mjs, `astro dev` only).
+// Same names and { ok, ... } shape the studio has always used.
 
 async function call(action, ...args) {
   try {
-    const response = await fetch("/api/admin/posts", {
+    const response = await fetch("/api/studio", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      // Custom header = CORS preflight, so other sites can't post here.
+      headers: { "Content-Type": "application/json", "X-Studio": "1" },
       body: JSON.stringify({ action, args }),
     });
-    if (response.status === 401) {
-      return { ok: false, error: "Your session expired. Sign in again.", unauthorized: true };
-    }
     return await response.json();
   } catch {
-    return { ok: false, error: "Network error. Check your connection." };
+    return { ok: false, error: "The studio only works while `npm run dev` is running." };
   }
 }
 

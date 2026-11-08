@@ -14,8 +14,6 @@ const {
   description = DEFAULT_DESCRIPTION,
   canonical,
   noindex = false,
-  // "public": navbar + client-side navigation. "admin": bare page, full loads.
-  variant = "public",
   og = {},
   twitter,
   jsonLd,
@@ -25,7 +23,6 @@ const {
 const fullTitle = title ? `${title} — Meer Tahmid` : DEFAULT_TITLE;
 const canonicalUrl = canonical ? absoluteUrl(canonical) : undefined;
 const pathname = Astro.url.pathname;
-const isPublic = variant === "public";
 const ogTitle = og.title ?? title ?? DEFAULT_TITLE;
 const ogDescription = og.description ?? description;
 const ogImages = og.images ?? [];
@@ -53,7 +50,7 @@ const ogImages = og.images ?? [];
     }
 
     {
-      isPublic && !noindex ? (
+      !noindex ? (
         <>
           <meta property="og:title" content={ogTitle} />
           <meta property="og:description" content={ogDescription} />
@@ -116,7 +113,7 @@ const ogImages = og.images ?? [];
         function apply() {
           var root = document.documentElement;
           var path = location.pathname;
-          var themed = path.indexOf("/blogs/") === 0 || path.indexOf("/admin/preview/") === 0;
+          var themed = path.indexOf("/blogs/") === 0;
           var light = false;
           try {
             light = themed && localStorage.getItem("blog-theme") === "light";
@@ -129,14 +126,10 @@ const ogImages = og.images ?? [];
       })();
     </script>
 
-    {isPublic ? <ClientRouter /> : null}
+    <ClientRouter />
   </head>
   <body>
-    {
-      isPublic ? (
-        <Navbar client:load pathname={pathname} transition:persist="navbar" />
-      ) : null
-    }
+    <Navbar client:load pathname={pathname} transition:persist="navbar" />
     <slot />
   </body>
 </html>

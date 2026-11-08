@@ -1,13 +1,12 @@
 import BackCircle from "../components/BackCircle";
-import BlogsVideo from "../components/BlogsVideo";
 import CoverImage, { CoverFallback, placeholderFor } from "../components/CoverImage";
-import { formatPostDate } from "../lib/content";
+import { formatPostDate } from "../lib/blog";
 import "./BlogsPage.css";
 
 export default function BlogsPage({ posts = [] }) {
   return (
     <main className="blogs-page">
-      <BlogsVideo />
+      <div className="page-glow" aria-hidden="true" />
 
       <BackCircle to="/" label="Back to portfolio" />
 

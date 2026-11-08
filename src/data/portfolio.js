@@ -44,50 +44,6 @@ export const works = [
   },
 ];
 
-// LEGACY: blog posts now live in the database; only scripts/seed.mjs reads this.
-export const journalEntries = [
-  {
-    id: "negative-space",
-    title: "The Quiet Power of Negative Space in Interface Design",
-    readTime: "6 min read",
-    date: "March 12, 2026",
-    image:
-      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&q=80&auto=format&fit=crop",
-    alt: "Minimalist workspace representing negative space",
-    placeholder: "ph-1",
-  },
-  {
-    id: "motion-language",
-    title: "Motion Design as a Communication Language",
-    readTime: "4 min read",
-    date: "February 28, 2026",
-    image:
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&q=80&auto=format&fit=crop",
-    alt: "Colorful abstract motion representing motion design",
-    placeholder: "ph-3",
-  },
-  {
-    id: "design-systems",
-    title: "Building Design Systems That Actually Scale",
-    readTime: "8 min read",
-    date: "February 10, 2026",
-    image:
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80&auto=format&fit=crop",
-    alt: "Tech workspace representing design systems",
-    placeholder: "ph-5",
-  },
-  {
-    id: "constraint",
-    title: "Why Constraint is the Designer's Greatest Tool",
-    readTime: "5 min read",
-    date: "January 22, 2026",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format&fit=crop",
-    alt: "Minimal portrait representing creative constraint",
-    placeholder: "ph-2",
-  },
-];
-
 export const galleryItems = [
   {
     id: "gi-0",
