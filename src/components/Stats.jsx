@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger } from "../lib/gsap";
+import { gsap, refreshScrollTriggers, ScrollTrigger } from "../lib/gsap";
 import Reveal from "./Reveal";
 import { stats } from "../data/portfolio";
 import "./Stats.css";
@@ -24,6 +24,7 @@ export default function Stats() {
         });
       });
     }, sectionRef);
+    refreshScrollTriggers();
 
     return () => context.revert();
   }, []);

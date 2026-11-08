@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { gsap } from "../lib/gsap";
+import { gsap, refreshScrollTriggers } from "../lib/gsap";
 
 /**
  * Fades and lifts its children into view once they enter the viewport.
@@ -33,6 +33,8 @@ export default function Reveal({
         },
       },
     );
+    // Re-measure once all sections have mounted (see lib/gsap.js).
+    refreshScrollTriggers();
 
     return () => {
       animation.scrollTrigger?.kill();

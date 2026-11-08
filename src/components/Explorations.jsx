@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { gsap } from "../lib/gsap";
+import { gsap, refreshScrollTriggers } from "../lib/gsap";
 import { galleryItems } from "../data/portfolio";
 import "./Explorations.css";
 
@@ -50,6 +50,7 @@ export default function Explorations() {
       });
     }, sectionRef);
 
+    refreshScrollTriggers();
     return () => context.revert();
   }, []);
 

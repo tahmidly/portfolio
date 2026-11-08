@@ -5,9 +5,10 @@
   border-bottom: 1px solid var(--stroke);
 }
 .stats-inner {
-  max-width: 1000px;
+  /* Width instead of side padding: padding would show the grey grid
+     background (the 1px divider color) as bars on the edges. */
+  width: min(1000px, calc(100% - 4rem));
   margin: 0 auto;
-  padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
@@ -35,7 +36,7 @@
 /* Tablet: tighter cells so 3 columns fit. */
 @media (max-width: 900px) {
   .stats-inner {
-    padding: 0 1.25rem;
+    width: calc(100% - 2.5rem);
   }
   .stat-item {
     padding: 2.5rem 1rem;
@@ -49,7 +50,7 @@
   }
   .stats-inner {
     grid-template-columns: 1fr;
-    padding: 0 1rem;
+    width: calc(100% - 2rem);
   }
   .stat-item {
     padding: 2rem 1rem;

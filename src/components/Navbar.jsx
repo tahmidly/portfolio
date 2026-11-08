@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { navigate } from "astro:transitions/client";
-import { ScrollTrigger } from "../lib/gsap";
+import { refreshScrollTriggers, ScrollTrigger } from "../lib/gsap";
 import { navLinks, socialLinks } from "../data/portfolio";
 import "./Navbar.css";
 
@@ -47,7 +47,6 @@ export default function Navbar({ pathname = "/" }) {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("hero");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [canGoBack, setCanGoBack] = useState(pathname !== "/");
   const visitsRef = useRef(0);
   const onHome = pathname === "/";
   const onBlogs = pathname.startsWith("/blogs");
@@ -86,6 +85,7 @@ export default function Navbar({ pathname = "/" }) {
           onLeaveBack: () => setActive("works"),
         })
       : null;
+    refreshScrollTriggers();
 
     return () => {
       worksTrigger?.kill();
@@ -93,18 +93,11 @@ export default function Navbar({ pathname = "/" }) {
     };
   }, [pathname]);
 
-  // Back is possible after moving between pages here, or when the visitor
-  // arrived from another page of this site. Off home there's always a parent.
+  // Count page views in this tab (the navbar persists across swaps), so the
+  // back button knows whether there is a page of this site to go back to.
   useEffect(() => {
     visitsRef.current += 1;
-    let fromHere = false;
-    try {
-      fromHere = Boolean(document.referrer) && new URL(document.referrer).origin === location.origin;
-    } catch {
-      fromHere = false;
-    }
-    setCanGoBack(!onHome || visitsRef.current > 1 || fromHere);
-  }, [pathname, onHome]);
+  }, [pathname]);
 
   // Drawer: close on page change and Escape; lock page scroll while open.
   useEffect(() => setDrawerOpen(false), [pathname]);
@@ -123,11 +116,21 @@ export default function Navbar({ pathname = "/" }) {
     };
   }, [drawerOpen]);
 
+  // Came from another page of this site → go back to it. Otherwise go up a
+  // level (post → /blogs, list → home); on Home itself, use browser history.
   const goBack = () => {
-    if (visitsRef.current > 1 && window.history.length > 1) {
+    let fromThisSite = visitsRef.current > 1;
+    try {
+      fromThisSite ||= Boolean(document.referrer) && new URL(document.referrer).origin === location.origin;
+    } catch {
+      // ignore malformed referrers
+    }
+    if (fromThisSite && window.history.length > 1) {
       window.history.back();
-    } else {
+    } else if (!onHome) {
       navigate(parentPath(pathname));
+    } else if (window.history.length > 1) {
+      window.history.back();
     }
   };
 
@@ -200,7 +203,7 @@ export default function Navbar({ pathname = "/" }) {
 
       {/* ─── Phone bar ─── */}
       <div className="nav-mobile">
-        {canGoBack && !reading ? (
+        {!reading ? (
           <button type="button" className="nav-round" aria-label="Go back" onClick={goBack}>
             <BackIcon />
           </button>

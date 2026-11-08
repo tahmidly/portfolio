@@ -176,17 +176,13 @@
   }
 }
 
+/* Reduced motion (e.g. Android "Remove animations" / battery saver): keep
+   the decorative marquee gently moving, just much slower. */
 @media (prefers-reduced-motion: reduce) {
-  .tech-marquee__track {
-    animation: none !important;
+  .tech-marquee--left .tech-marquee__track {
+    animation-duration: 90s;
   }
-  .tech-marquee {
-    overflow-x: auto;
-    -webkit-mask-image: none;
-    mask-image: none;
-    scrollbar-width: none;
-  }
-  .tech-marquee::-webkit-scrollbar {
-    display: none;
+  .tech-marquee--right .tech-marquee__track {
+    animation-duration: 100s;
   }
 }
