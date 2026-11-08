@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SectionHeader from "./SectionHeader";
@@ -9,6 +10,11 @@ import "./Journal.css";
 
 export default function Journal({ entries = [] }) {
   const router = useRouter();
+
+  // "View all" is a button, not a <Link>, so it isn't prefetched automatically.
+  useEffect(() => {
+    router.prefetch("/blogs");
+  }, [router]);
 
   return (
     <section className="journal" id="journal">

@@ -1,22 +1,19 @@
-"use client";
-
-import { useRef } from "react";
-import useHlsVideo from "../hooks/useHlsVideo";
+// Background video disabled for now.
+// import { BACKGROUND_VIDEO } from "../lib/videos";
 
 export default function BlogsVideo() {
-  const videoRef = useRef(null);
-  useHlsVideo(videoRef);
-
   return (
     <div className="blogs-video-bg" aria-hidden="true">
+      {/* Background video disabled for now.
       <video
-        ref={videoRef}
         className="blogs-video"
+        src={BACKGROUND_VIDEO}
         autoPlay
         muted
         loop
         playsInline
       />
+      */}
       <div className="blogs-video-overlay" />
     </div>
   );

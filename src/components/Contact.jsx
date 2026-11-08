@@ -2,16 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "../lib/gsap";
-import useHlsVideo from "../hooks/useHlsVideo";
+// Background video disabled for now.
+// import { BACKGROUND_VIDEO } from "../lib/videos";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import { socialLinks } from "../data/portfolio";
 import "./Contact.css";
 
 export default function Contact() {
-  const videoRef = useRef(null);
   const trackRef = useRef(null);
-
-  useHlsVideo(videoRef);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -33,14 +31,16 @@ export default function Contact() {
   return (
     <section className="contact" id="contact">
       <div className="footer-video-wrap">
+        {/* Background video disabled for now.
         <video
-          ref={videoRef}
           className="footer-video"
+          src={BACKGROUND_VIDEO}
           autoPlay
           muted
           loop
           playsInline
         />
+        */}
         <div className="footer-overlay" />
       </div>
 

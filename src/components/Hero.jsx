@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "../lib/gsap";
-import useHlsVideo, { VIDEO_POSTER } from "../hooks/useHlsVideo";
+// Background video disabled for now.
+// import { BACKGROUND_VIDEO } from "../lib/videos";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import GitHubActivity from "./GitHubActivity";
 import PageLoader from "./PageLoader";
@@ -23,8 +24,6 @@ export default function Hero() {
   const [showLoader, setShowLoader] = useState(() => !hasBooted);
   const [progress, setProgress] = useState(10);
   const [ready, setReady] = useState(false);
-
-  useHlsVideo(videoRef);
 
   // Wait for the display font and the first video frames (capped so a slow
   // stream never blocks the page), then release the intro.
@@ -113,16 +112,18 @@ export default function Hero() {
       ) : null}
 
       <div className="hero-video-wrap">
+        {/* Background video disabled for now.
         <video
           ref={videoRef}
           className="hero-video"
-          poster={VIDEO_POSTER}
+          src={BACKGROUND_VIDEO}
           preload="auto"
           autoPlay
           muted
           loop
           playsInline
         />
+        */}
         <div className="hero-overlay" />
         <div className="hero-fade-bottom" />
       </div>

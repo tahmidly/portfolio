@@ -12,7 +12,6 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
     <style>
       *,
       *::before,
@@ -1227,14 +1226,17 @@
     <!-- ═══ HERO ═══ -->
     <section id="hero">
       <div class="hero-video-wrap">
+        <!-- Background video disabled for now.
         <video
           id="hero-video"
           class="hero-video"
+          src="../public/videos.mp4"
           autoplay
           muted
           loop
           playsinline
         ></video>
+        -->
         <div class="hero-overlay"></div>
         <div class="hero-fade-bottom"></div>
       </div>
@@ -1590,14 +1592,17 @@
     <!-- ═══ CONTACT / FOOTER ═══ -->
     <section id="contact">
       <div class="footer-video-wrap">
+        <!-- Background video disabled for now.
         <video
           id="footer-video"
           class="footer-video"
+          src="../public/videos.mp4"
           autoplay
           muted
           loop
           playsinline
         ></video>
+        -->
         <div class="footer-overlay"></div>
       </div>
       <div class="footer-inner">
@@ -1731,30 +1736,6 @@
         }
         requestAnimationFrame(raf);
       })();
-
-      /* ─────────────────────────────────────────────
-   HLS VIDEO SETUP
-───────────────────────────────────────────── */
-      function setupVideo(videoEl) {
-        var src =
-          "https://stream.mux.com/Aa02T7oM1wH5Mk5EEVDYhbZ1ChcdhRsS2m1NYyx4Ua1g.m3u8";
-        if (typeof Hls !== "undefined" && Hls.isSupported()) {
-          var hls = new Hls({ lowLatencyMode: true });
-          hls.loadSource(src);
-          hls.attachMedia(videoEl);
-          hls.on(Hls.Events.MANIFEST_PARSED, function () {
-            videoEl.play().catch(function () {});
-          });
-        } else if (videoEl.canPlayType("application/vnd.apple.mpegurl")) {
-          videoEl.src = src;
-          videoEl.addEventListener("loadedmetadata", function () {
-            videoEl.play().catch(function () {});
-          });
-        }
-      }
-
-      setupVideo(document.getElementById("hero-video"));
-      setupVideo(document.getElementById("footer-video"));
 
       /* ─────────────────────────────────────────────
    NAVBAR SCROLL

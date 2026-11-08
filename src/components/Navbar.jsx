@@ -50,6 +50,11 @@ export default function Navbar() {
     };
   }, [pathname]);
 
+  // Section buttons navigate home with router.push, which doesn't prefetch.
+  useEffect(() => {
+    if (pathname !== "/") router.prefetch("/");
+  }, [pathname, router]);
+
   const handleNavClick = (sectionId) => {
     setActive(sectionId);
     if (pathname !== "/") {

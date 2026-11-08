@@ -24,12 +24,6 @@ export default function RootLayout({ children }) {
           as="image"
           fetchPriority="high"
         />
-        <link
-          rel="preconnect"
-          href="https://stream.mux.com"
-          crossOrigin="anonymous"
-        />
-        <link rel="preconnect" href="https://image.mux.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
