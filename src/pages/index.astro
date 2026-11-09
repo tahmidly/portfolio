@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.jsx";
+import FeaturedWorks from "../components/FeaturedWorks.jsx";
 import SelectedWorks from "../components/SelectedWorks.jsx";
 import Journal from "../components/Journal.jsx";
 import Explorations from "../components/Explorations.jsx";
@@ -51,6 +52,7 @@ const jsonLd = [
 <BaseLayout canonical="/" jsonLd={jsonLd}>
   <main>
     <Hero />
+    <FeaturedWorks client:visible works={featuredWorks} />
     {/* Other sections are turned off for now while the page is redesigned.
     <SelectedWorks client:load works={featuredWorks} />
     <Journal client:load entries={entries} />

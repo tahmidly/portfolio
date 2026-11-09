@@ -8,10 +8,12 @@ const IMAGE = {
   src: "/me.png",
   alt: "Portrait of Meer Tahmid",
 };
-// Short intro under the headline, and where "See more" leads.
+// Short intro under the headline.
 const INTRO =
   "I'm from Bangladesh, where rainy afternoons, strong tea and long conversations shaped who I am. I love slow mornings, wandering new streets and noticing the little things most people walk past. This is my personal space — a place for my stories, my thoughts and the small moments I don't want to forget.";
-const SEE_MORE_URL = "/about";
+// Buttons under the intro. Put your resume in /public with this name.
+const RESUME_URL = "/resume.pdf";
+const STORY_URL = "/about";
 // "Moments": placeholder photos for now — swap in your own.
 const MOMENTS = [
   {
@@ -62,9 +64,23 @@ export default function Hero() {
 
           <div className="hero-intro">
             <p className="hero-intro-text">{INTRO}</p>
-            <a className="hero-intro-btn" href={SEE_MORE_URL}>
-              See more
-            </a>
+            <div className="hero-actions">
+              <a className="hero-btn hero-btn--primary" href={RESUME_URL} download>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path d="M12 4v11" />
+                  <path d="m7 10 5 5 5-5" />
+                  <path d="M5 20h14" />
+                </svg>
+                Resume
+              </a>
+              <a className="hero-btn hero-btn--outline" href={STORY_URL}>
+                Read my story
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path d="M5 12h14" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </a>
+            </div>
           </div>
 
           <p className="hero-dock-label">Moments</p>

@@ -1,0 +1,266 @@
+/* ─── Featured projects: classic text list ─── */
+
+.fw {
+  background: var(--bg);
+  padding: 0 0 7.5rem;
+}
+
+/* Same container as the navbar and hero. A thin line marks the start of
+   the section. */
+.fw-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+.fw-header {
+  padding-top: 4.5rem;
+  border-top: 1px solid var(--stroke);
+}
+
+/* ─── Header ─── */
+.fw-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+.fw-label {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.fw-title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--text);
+}
+.fw-sub {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: 27px;
+  color: var(--muted);
+}
+
+/* "View all" — same outlined pill as "Read my story". */
+.fw-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  height: 42px;
+  padding: 0 1.15rem;
+  border: 1px solid var(--stroke);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--bg) 60%, white);
+  color: var(--text);
+  font-family: var(--font-text);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+.fw-btn svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+.fw-btn:hover {
+  border-color: var(--text);
+}
+.fw-btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* ─── List ─── */
+.fw-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--stroke);
+}
+.fw-list li {
+  border-bottom: 1px solid var(--stroke);
+}
+
+.fw-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.75rem 0;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.fw-year,
+.fw-tag {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.fw-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fw-name {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.fw-desc {
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--muted);
+}
+
+.fw-arrow {
+  justify-self: end;
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hover / keyboard focus: name slides right, arrow nudges up-right. */
+.fw-row:hover .fw-main,
+.fw-row:focus-visible .fw-main {
+  transform: translateX(8px);
+}
+.fw-row:hover .fw-arrow,
+.fw-row:focus-visible .fw-arrow {
+  transform: translate(3px, -3px);
+}
+/* Dim the other rows a little so the hovered one stands out. */
+@media (hover: hover) {
+  .fw-list:hover .fw-row {
+    opacity: 0.45;
+  }
+  .fw-list:hover .fw-row:hover {
+    opacity: 1;
+  }
+}
+
+/* ─── Cursor thumbnail ─── */
+.fw-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: 220px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.92;
+  transition:
+    opacity 0.3s ease,
+    scale 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.fw-preview.is-visible {
+  opacity: 1;
+  scale: 1;
+}
+.fw-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Same matte black & white look as the hero photo. */
+  filter: grayscale(1) contrast(0.85);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.fw-preview img.is-active {
+  opacity: 1;
+}
+/* No cursor on touch screens: no thumbnail. */
+@media (hover: none), (pointer: coarse) {
+  .fw-preview {
+    display: none;
+  }
+}
+
+/* ─── Phones ─── */
+@media (max-width: 640px) {
+  .fw {
+    padding: 1rem 0 5rem;
+  }
+  .fw-inner {
+    padding: 0 1rem;
+  }
+  .fw-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+    padding-top: 3rem;
+  }
+  .fw-title {
+    font-size: 32px;
+  }
+  /* Year and category on one small line above the name. */
+  .fw-row {
+    grid-template-columns: auto 1fr 20px;
+    grid-template-areas:
+      "year tag arrow"
+      "main main main";
+    gap: 0.6rem 0.75rem;
+    padding: 1.4rem 0;
+  }
+  .fw-year {
+    grid-area: year;
+  }
+  .fw-tag {
+    grid-area: tag;
+  }
+  .fw-tag::before {
+    content: "· ";
+  }
+  .fw-arrow {
+    grid-area: arrow;
+  }
+  .fw-main {
+    grid-area: main;
+  }
+  .fw-name {
+    font-size: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fw-main,
+  .fw-arrow,
+  .fw-preview,
+  .fw-preview img {
+    transition: none;
+  }
+}

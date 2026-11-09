@@ -1,10 +1,14 @@
 /* ─── Hero: image left, text right ─── */
 
+/* Starts a fixed 80px below the navbar (100px tall) instead of centring in
+   the window, so the gap is the same on every screen. It is at least one
+   screen tall, so the next section starts just below the fold instead of
+   peeking in half-visible. */
 .hero {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100svh;
-  padding: 7rem 0 4rem;
+  padding: calc(100px + 80px) 0 4rem;
   background: var(--bg);
 }
 
@@ -120,18 +124,53 @@
   letter-spacing: 0;
   color: var(--muted);
 }
-.hero-intro-btn {
-  padding: 0.6rem 1.15rem;
+/* Resume (dark) + Read my story (outlined). */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 42px;
+  padding: 0 1.15rem;
+  border: 1px solid transparent;
   border-radius: 9999px;
+  font-family: var(--font-text);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+.hero-btn svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+.hero-btn--primary {
   background: #2d2d2d;
   color: #fff;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
 }
-.hero-intro-btn:hover {
+.hero-btn--primary:hover {
   background: #444;
+}
+.hero-btn--outline {
+  border-color: var(--stroke);
+  background: color-mix(in srgb, var(--bg) 60%, white);
+  color: var(--text);
+}
+.hero-btn--outline:hover {
+  border-color: var(--text);
+}
+.hero-btn--outline:hover svg {
+  transform: translateX(3px);
 }
 
 /* ─── Moments dock ─── */
@@ -274,12 +313,8 @@
     line-height: 26px;
   }
   /* 44px tall: an easy tap target. */
-  .hero-intro-btn {
-    display: inline-flex;
-    align-items: center;
+  .hero-btn {
     height: 44px;
-    padding: 0 1.25rem;
-    font-size: 14px;
   }
   .hero-dock-item {
     width: 46px;
