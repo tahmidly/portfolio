@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.jsx";
 import FeaturedWorks from "../components/FeaturedWorks.jsx";
+import RecentWriting from "../components/RecentWriting.jsx";
 import SelectedWorks from "../components/SelectedWorks.jsx";
 import Journal from "../components/Journal.jsx";
 import Explorations from "../components/Explorations.jsx";
@@ -29,6 +30,16 @@ const entries = posts.slice(0, 4).map((post) => ({
   placeholder: placeholderFor(post.slug),
 }));
 
+// Latest 4 posts for the Recent writing list.
+const recentPosts = posts.slice(0, 4).map((post) => ({
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  readingTime: post.readingTime,
+  publishedAt: post.publishedAt,
+  date: formatPostDate(post.publishedAt),
+}));
+
 // Structured data so Google knows who the site belongs to (name, links).
 const jsonLd = [
   {
@@ -53,6 +64,7 @@ const jsonLd = [
   <main>
     <Hero />
     <FeaturedWorks works={featuredWorks} />
+    <RecentWriting posts={recentPosts} />
     {/* Other sections are turned off for now while the page is redesigned.
     <SelectedWorks client:load works={featuredWorks} />
     <Journal client:load entries={entries} />
