@@ -101,7 +101,7 @@ const description = "Small moments and photographs, kept like an old logbook.";
                   </header>
                   <div class="entry-body">
                     <a class="entry-photo" href={`/photobook/${moment.slug}/`} aria-label={`Open “${moment.title}”`}>
-                      <img src={moment.image} alt={moment.alt} loading="lazy" decoding="async" />
+                      <img src={moment.image} alt={moment.alt} loading="lazy" decoding="async" draggable="false" />
                     </a>
                     <div class="entry-text">
                       <h2 class="entry-title">{moment.title}</h2>
@@ -431,34 +431,93 @@ const description = "Small moments and photographs, kept like an old logbook.";
     document.addEventListener("fullscreenchange", () => {
       if (!document.fullscreenElement && table.classList.contains("is-full")) setFull(false);
     });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && table.classList.contains("is-full")) setFull(false);
-    });
-    document.addEventListener("astro:before-swap", () => setFull(false), { once: true });
+    // Keyboard: ← / → turn pages anywhere on the page (no need to click the
+    // book first); Esc leaves fullscreen.
+    const onKey = (event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        go(1);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        go(-1);
+      } else if (event.key === "Escape" && table.classList.contains("is-full")) {
+        setFull(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        setFull(false);
+        document.removeEventListener("keydown", onKey);
+      },
+      { once: true },
+    );
 
     prevBtn.addEventListener("click", () => go(-1));
     nextBtn.addEventListener("click", () => go(1));
-    stage.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") go(1);
-      if (event.key === "ArrowLeft") go(-1);
-    });
 
     // Swipe left/right to turn.
+    let swiped = false;
+    const SWIPE = 40; // px
+
+    // Touch: decide the direction on the first few pixels of movement. A
+    // sideways swipe is locked in (the page won't scroll up or down while you
+    // turn); an up/down drag scrolls the page as usual.
+    let touch = null;
+    stage.addEventListener(
+      "touchstart",
+      (event) => {
+        if (event.touches.length !== 1) return (touch = null);
+        const t = event.touches[0];
+        touch = { x: t.clientX, y: t.clientY, axis: null };
+      },
+      { passive: true },
+    );
+    stage.addEventListener(
+      "touchmove",
+      (event) => {
+        if (!touch) return;
+        const t = event.touches[0];
+        const dx = t.clientX - touch.x;
+        const dy = t.clientY - touch.y;
+        if (!touch.axis && Math.hypot(dx, dy) > 8) {
+          touch.axis = Math.abs(dx) > Math.abs(dy) * 0.8 ? "x" : "y";
+        }
+        if (touch.axis === "x" && event.cancelable) event.preventDefault();
+      },
+      { passive: false },
+    );
+    stage.addEventListener("touchend", (event) => {
+      if (!touch) return;
+      const t = event.changedTouches[0];
+      const dx = t.clientX - touch.x;
+      const axis = touch.axis;
+      touch = null;
+      swiped = axis === "x" && Math.abs(dx) > SWIPE;
+      if (swiped) go(dx < 0 ? 1 : -1);
+    });
+    stage.addEventListener("touchcancel", () => (touch = null));
+
+    // Mouse: drag sideways to turn (text and photos are not selectable or
+    // draggable in the book, so dragging doesn't highlight anything).
     let startX = null;
     let startY = null;
-    let swiped = false;
     stage.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "touch") return;
       startX = event.clientX;
       startY = event.clientY;
     });
     stage.addEventListener("pointerup", (event) => {
-      if (startX === null) return;
+      if (event.pointerType === "touch" || startX === null) return;
       const dx = event.clientX - startX;
       const dy = event.clientY - startY;
       startX = null;
-      swiped = Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy);
+      swiped = Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy);
       if (swiped) go(dx < 0 ? 1 : -1);
     });
+    stage.addEventListener("dragstart", (event) => event.preventDefault());
     // A swipe that ends on a photo turns the page instead of opening it.
     stage.addEventListener(
       "click",
@@ -634,6 +693,10 @@ const description = "Small moments and photographs, kept like an old logbook.";
     perspective: 2600px;
     outline: none;
     touch-action: pan-y;
+    /* Dragging to turn shouldn't highlight text or pick up photos. */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     background: repeating-linear-gradient(
       to right,
       #d8c39b 0,

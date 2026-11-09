@@ -55,16 +55,17 @@ const back = `/photobook#m-${index}`;
   />
 
   <main class="ms" style={`--table-image: url("${TABLE}")`}>
+    <a href={back} class="back-btn" data-back>← Photobook</a>
     <div class="sheet-shadow">
       <article class="sheet" style={tornEdge(index + 3)}>
         <p class="sheet-running">
-          <a href={back} class="sheet-back" data-back>← Back to the photobook</a>
+          <span>Moment {index + 1} of {moments.length}</span>
           <span>In the photobook, {year}.</span>
         </p>
 
         <div class="sheet-body">
           <figure class="sheet-photo">
-            <img src={photo} alt={moment.alt} decoding="async" fetchpriority="high" />
+            <img src={photo} alt={moment.alt} decoding="async" fetchpriority="high" draggable="false" />
           </figure>
 
           <div class="sheet-text">
@@ -78,13 +79,13 @@ const back = `/photobook#m-${index}`;
 
             <nav class="sheet-nav" aria-label="More moments">
               {newer ? (
-                <a href={`/photobook/${newer.slug}/`} class="sheet-link">
+                <a href={`/photobook/${newer.slug}/`} class="sheet-link" data-newer>
                   <span>← Newer</span>
                   {newer.title}
                 </a>
               ) : <span />}
               {older ? (
-                <a href={`/photobook/${older.slug}/`} class="sheet-link sheet-link--older">
+                <a href={`/photobook/${older.slug}/`} class="sheet-link sheet-link--older" data-older>
                   <span>Older →</span>
                   {older.title}
                 </a>
@@ -98,15 +99,42 @@ const back = `/photobook#m-${index}`;
 </BaseLayout>
 
 <script>
-  // Esc goes back to the book.
+  // Keys: Esc goes back to the photobook; ← newer moment, → older one.
+  // Phones: swipe left for the older moment, right for the newer one.
+  const follow = (selector: string) =>
+    document.querySelector<HTMLAnchorElement>(selector)?.click();
+
   function onKey(event: KeyboardEvent) {
-    if (event.key !== "Escape") return;
-    const back = document.querySelector<HTMLAnchorElement>("[data-back]");
-    if (back) back.click();
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === "Escape") follow("[data-back]");
+    if (event.key === "ArrowLeft") follow("[data-newer]");
+    if (event.key === "ArrowRight") follow("[data-older]");
   }
+
+  let touch: { x: number; y: number } | null = null;
+  function onTouchStart(event: TouchEvent) {
+    const t = event.touches[0];
+    touch = event.touches.length === 1 ? { x: t.clientX, y: t.clientY } : null;
+  }
+  function onTouchEnd(event: TouchEvent) {
+    if (!touch) return;
+    const t = event.changedTouches[0];
+    const dx = t.clientX - touch.x;
+    const dy = t.clientY - touch.y;
+    touch = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      follow(dx < 0 ? "[data-older]" : "[data-newer]");
+    }
+  }
+
   document.addEventListener("astro:page-load", () => {
     document.removeEventListener("keydown", onKey);
-    if (document.querySelector("[data-back]")) document.addEventListener("keydown", onKey);
+    document.removeEventListener("touchstart", onTouchStart);
+    document.removeEventListener("touchend", onTouchEnd);
+    if (!document.querySelector(".ms")) return;
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
   });
 </script>
 
@@ -121,15 +149,41 @@ const back = `/photobook#m-${index}`;
     height: 100svh;
     padding: 1.5rem;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
     background:
       radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 30%, rgba(15, 8, 3, 0.55) 100%),
       linear-gradient(rgba(60, 35, 15, 0.15), rgba(60, 35, 15, 0.15)),
       var(--table-image) center / cover no-repeat,
       #3a2a1e;
   }
+  /* Way back to the book, top left on the table (same as Home on /photobook). */
+  .back-btn {
+    position: absolute;
+    top: 1.1rem;
+    left: 1.25rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    height: 42px;
+    padding: 0 1rem;
+    border: 1px solid rgba(255, 240, 215, 0.35);
+    border-radius: 9999px;
+    background: rgba(245, 235, 215, 0.92);
+    color: #2d2d2d;
+    font-family: var(--font-text);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  .back-btn:hover {
+    background: #fff8ea;
+  }
+
   /* The shadow sits on a wrapper (the torn clip-path would cut it off). */
   .sheet-shadow {
-    width: min(1280px, 100%);
+    /* Room on the sides for the back button. */
+    width: min(1280px, 100% - 300px);
     height: 100%;
     filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.45));
   }
@@ -169,16 +223,6 @@ const back = `/photobook#m-${index}`;
     font-size: 15px;
     font-style: italic;
     color: var(--ink-soft);
-  }
-  .sheet-back {
-    position: relative;
-    z-index: 1;
-    color: var(--ink);
-    text-decoration: none;
-  }
-  .sheet-back:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
 
   /* Photo large on the left, the words beside it. */
@@ -297,9 +341,23 @@ const back = `/photobook#m-${index}`;
   }
 
   /* Narrower screens: photo on top, words below, still one screen. */
+  @media (max-width: 1100px) {
+    .ms {
+      padding-top: 4.5rem;
+    }
+    .sheet-shadow {
+      width: min(1280px, 100%);
+    }
+  }
   @media (max-width: 860px) {
     .ms {
-      padding: 0.75rem;
+      padding: 3.5rem 0.75rem 0.75rem;
+    }
+    .back-btn {
+      top: 0.6rem;
+      left: 0.75rem;
+      height: 36px;
+      padding: 0 0.85rem;
     }
     .sheet {
       padding: 1.5rem 1.4rem 1.4rem;
