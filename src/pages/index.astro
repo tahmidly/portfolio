@@ -52,7 +52,7 @@ const jsonLd = [
 <BaseLayout canonical="/" jsonLd={jsonLd}>
   <main>
     <Hero />
-    <FeaturedWorks client:visible works={featuredWorks} />
+    <FeaturedWorks works={featuredWorks} />
     {/* Other sections are turned off for now while the page is redesigned.
     <SelectedWorks client:load works={featuredWorks} />
     <Journal client:load entries={entries} />

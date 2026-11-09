@@ -1,0 +1,279 @@
+/* ─── Single project page (/projects/<slug>/): a classic details page ───
+   Short header (title, lead, meta, live link), then the details written in
+   the project's Markdown: small uppercase section labels, "·" bullet lists
+   and large, comfortable paragraphs. */
+
+.project {
+  background: var(--bg);
+  padding: calc(100px + 56px) 0 7.5rem;
+}
+
+/* Hairlines run the full width; text stays at a reading width. */
+.project-inner {
+  max-width: calc(900px + var(--container-pad) * 2);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.project-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.project-back:hover {
+  color: var(--text);
+}
+
+/* ─── Header ─── */
+.project-header {
+  max-width: 600px;
+  padding-bottom: 2.25rem;
+}
+.project-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-heading);
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+.project-lead {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-text);
+  font-size: 20px;
+  line-height: 32px;
+  color: var(--text);
+}
+.project-meta {
+  margin: 0 0 1rem;
+  font-family: var(--font-text);
+  font-size: 14px;
+  color: var(--muted);
+}
+.project-live {
+  font-family: var(--font-text);
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  transition: opacity 0.2s ease;
+}
+.project-live:hover {
+  opacity: 0.65;
+}
+
+/* ─── Details (from Markdown) ─── */
+.project-details {
+  border-top: 1px solid var(--stroke);
+  padding-top: 2.75rem;
+}
+
+/* Section headings ("The Problem", "The Solution"…), each starting a new
+   block with a hairline above it. */
+.project-details h2 {
+  margin: 3rem 0 1rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--stroke);
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.project-details > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+/* Small uppercase label with a hairline under it ("MORE WORK"). */
+.project-more h2 {
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--stroke);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.project-details h3 {
+  max-width: 600px;
+  margin: 2.25rem 0 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+/* Comfortable reading paragraphs. */
+.project-details p {
+  max-width: 640px;
+  margin: 0 0 1.5rem;
+  font-family: var(--font-text);
+  font-size: 17px;
+  line-height: 30px;
+  color: var(--muted);
+}
+
+/* Lists: quiet "·" bullets, smaller text. */
+.project-details ul,
+.project-details ol {
+  max-width: 600px;
+  margin: 0 0 2.5rem;
+  padding: 0;
+}
+.project-details ul {
+  list-style: none;
+}
+.project-details ol {
+  padding-left: 1.25rem;
+}
+.project-details li {
+  position: relative;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: 26px;
+  color: var(--muted);
+}
+.project-details ul > li {
+  padding-left: 1rem;
+}
+.project-details ul > li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+
+.project-details a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.project-details strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.project-details blockquote {
+  max-width: 600px;
+  margin: 0 0 1.5rem;
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--stroke);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text);
+}
+.project-details img {
+  display: block;
+  max-width: 100%;
+  margin: 2rem 0;
+  border-radius: 12px;
+}
+
+/* ─── Tech stack: same heading as the sections, then small mono tags ─── */
+.project-stack {
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--stroke);
+}
+.project-stack h2 {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.project-stack ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.project-stack li {
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* ─── More work at the bottom ─── */
+.project-more {
+  margin-top: 4.5rem;
+}
+.project-more ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.project-more li {
+  border-bottom: 1px solid var(--stroke);
+}
+.project-more a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.25rem 0;
+  text-decoration: none;
+}
+.project-more-name {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.project-more-desc {
+  font-family: var(--font-text);
+  font-size: 15px;
+  color: var(--muted);
+}
+.project-more a:hover .project-more-name {
+  transform: translateX(8px);
+}
+
+/* ─── Phones ─── */
+@media (max-width: 640px) {
+  .project {
+    padding: calc(64px + 2.5rem) 0 5rem;
+  }
+  .project-inner {
+    padding: 0 1rem;
+  }
+  .project-title {
+    font-size: 36px;
+  }
+  .project-lead {
+    font-size: 18px;
+    line-height: 29px;
+  }
+  .project-details p {
+    font-size: 16px;
+    line-height: 28px;
+  }
+  .project-details h2,
+  .project-stack h2 {
+    font-size: 24px;
+  }
+}

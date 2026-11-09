@@ -106,8 +106,8 @@ const ogImages = hasOwnImage
 
     <!--
       Runs before first paint and after every client-side page swap (the swap
-      replaces <html> attributes): applies the light theme on the homepage and
-      (when chosen) on blog posts, so those pages never flash dark.
+      replaces <html> attributes): applies the light theme on the homepage,
+      project pages and (when chosen) blog posts, so they never flash dark.
     -->
     <script is:inline>
       (function () {
@@ -117,8 +117,9 @@ const ogImages = hasOwnImage
           var root = document.documentElement;
           var path = location.pathname;
           var post = path.replace(/\/+$/, "");
-          // The homepage is always light.
-          var light = post === "";
+          // The homepage and single project pages ("/projects/<slug>/") are
+          // always light.
+          var light = post === "" || /^\/projects\/[^/]+$/.test(post);
           // Blog posts ("/blogs/<slug>", not the "/blogs/" list) follow the
           // reader's saved choice.
           var themed = post.indexOf("/blogs/") === 0 && post.length > 7;

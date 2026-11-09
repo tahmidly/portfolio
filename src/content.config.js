@@ -51,6 +51,8 @@ const works = defineCollection({
     imageAlt: optionalText,
     /** Where the card links to (live site, repo…). */
     url: optionalText,
+    /** Tech stack shown at the bottom of the project page, e.g. ["Next.js", "Prisma"]. */
+    stack: z.preprocess(blank, z.array(z.string()).default([])),
     /** Sort order on /works: newest first. */
     date: z.coerce.date(),
     draft: z.preprocess(blank, z.boolean().default(false)),

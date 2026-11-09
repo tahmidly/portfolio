@@ -1,0 +1,116 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedWorks } from "../../lib/works";
+import { SITE_URL, absoluteUrl } from "../../lib/site";
+import "../../views/ProjectPage.css";
+
+// One page per published project in src/content/works/. Anything written
+// below the front matter in a project's .md file shows up as the details,
+// e.g.
+//
+//   ## What it does
+//   - Store live from your phone in about two minutes
+//   - Every order arrives in WhatsApp
+//
+//   A few paragraphs telling the story…
+export async function getStaticPaths() {
+  const works = await getPublishedWorks();
+  const entries = await getCollection("works", ({ data }) => !data.draft);
+  const entryById = new Map(entries.map((entry) => [entry.id, entry]));
+
+  // Works are newest-first: "previous" = older, "next" = newer.
+  return works.map((work, index) => ({
+    params: { slug: work.slug },
+    props: {
+      work,
+      entry: entryById.get(work.id),
+      previous: works[index + 1] || null,
+      next: works[index - 1] || null,
+    },
+  }));
+}
+
+const { work, entry, previous, next } = Astro.props;
+const { Content } = await render(entry);
+const hasDetails = Boolean(entry.body?.trim());
+// "stack:" list in the project's front matter.
+const stack = entry.data.stack ?? [];
+
+const year = new Date(work.date).getFullYear();
+// "E-commerce · SaaS" · 2026 · Live
+const meta = [work.tag, year, work.url ? "Live" : ""].filter(Boolean).join(" · ");
+const others = [previous, next].filter(Boolean);
+
+const url = `${SITE_URL}/projects/${work.slug}/`;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  name: work.title,
+  description: work.description,
+  image: work.image ? absoluteUrl(work.image) : undefined,
+  dateCreated: work.date,
+  url,
+};
+---
+
+<BaseLayout
+  title={work.title}
+  description={work.description}
+  canonical={`/projects/${work.slug}/`}
+  og={{
+    type: "article",
+    title: `${work.title} — Meer Tahmid`,
+    description: work.description,
+    images: work.image ? [{ url: absoluteUrl(work.image), alt: work.alt }] : undefined,
+  }}
+  jsonLd={jsonLd}
+>
+  <main class="project">
+    <article class="project-inner">
+      <a class="project-back" href="/#works">← Back to projects</a>
+
+      <header class="project-header">
+        <h1 class="project-title">{work.title}</h1>
+        <p class="project-lead">{work.description}</p>
+        <p class="project-meta">{meta}</p>
+        {work.url && (
+          <a class="project-live" href={work.url} target="_blank" rel="noopener noreferrer">
+            live ↗
+          </a>
+        )}
+      </header>
+
+      {hasDetails && (
+        <div class="project-details">
+          <Content />
+        </div>
+      )}
+
+      {stack.length > 0 && (
+        <section class="project-stack" aria-labelledby="stack-heading">
+          <h2 id="stack-heading">Tech stack</h2>
+          <ul>
+            {stack.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
+      )}
+
+      {others.length > 0 && (
+        <nav class="project-more" aria-label="More work">
+          <h2>More work</h2>
+          <ul>
+            {others.map((other) => (
+              <li>
+                <a href={`/projects/${other.slug}/`}>
+                  <span class="project-more-name">{other.title}</span>
+                  <span class="project-more-desc">{other.description}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </article>
+  </main>
+</BaseLayout>

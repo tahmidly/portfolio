@@ -3,7 +3,7 @@ import "./Hero.css";
 // ─── Edit these to make the hero yours ───
 const NAME = "Meer Tahmid";
 // Big image on the left (from /public). CSS shows it as a matte black &
-// white photo and reveals the original colours on hover (see Hero.css).
+// white photo (see Hero.css).
 const IMAGE = {
   src: "/me.png",
   alt: "Portrait of Meer Tahmid",
@@ -66,7 +66,7 @@ export default function Hero() {
             <p className="hero-intro-text">{INTRO}</p>
             <div className="hero-actions">
               <a className="hero-btn hero-btn--primary" href={RESUME_URL} download>
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M12 4v11" />
                   <path d="m7 10 5 5 5-5" />
                   <path d="M5 20h14" />
@@ -75,7 +75,7 @@ export default function Hero() {
               </a>
               <a className="hero-btn hero-btn--outline" href={STORY_URL}>
                 Read my story
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M5 12h14" />
                   <path d="m13 6 6 6-6 6" />
                 </svg>
