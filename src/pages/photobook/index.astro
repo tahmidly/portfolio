@@ -137,7 +137,7 @@ const description = "Small moments and photographs, kept like an old logbook.";
   // Desktop shows a spread (two pages): "next" lifts the right page and turns
   // it over the spine; "previous" turns the left page back. Phones show one
   // page and turn it like a single leaf. Buttons, arrow keys and swipes work.
-  const DURATION = 900;
+  const DURATION = 560; // ms for one page turn
 
   function initBook() {
     const book = document.querySelector("[data-book]");
@@ -156,6 +156,7 @@ const description = "Small moments and photographs, kept like an old logbook.";
     let index = 0; // spread on desktop, page on phones
     let busy = false;
     let goal = 0; // where the book will end up once queued turns finish
+    let finishTurn = null; // ends the page that is turning right now
 
     const total = () => (desktop ? pages.length / 2 : pages.length);
     const slots = ["slot-left", "slot-right", "slot-single"];
@@ -309,31 +310,35 @@ const description = "Small moments and photographs, kept like an old logbook.";
       // Read layout once so the starting angle is applied, then turn.
       void leaf.offsetWidth;
       // More clicks waiting: turn faster so the book keeps up.
-      const ms = goal !== target ? DURATION / 2 : DURATION;
+      const ms = goal !== target ? DURATION * 0.6 : DURATION;
       leaf.style.setProperty("--turn", `${ms}ms`);
       leaf.classList.add("is-turning");
       leaf.style.transform = to;
       const finish = () => {
         if (!leaf.isConnected) return;
+        finishTurn = null;
         leaf.remove();
         done();
         busy = false;
         advance();
       };
       leaf.addEventListener("transitionend", (e) => e.target === leaf && finish());
-      setTimeout(() => leaf.isConnected && finish(), ms + 200);
+      setTimeout(() => leaf.isConnected && finish(), ms + 150);
+      finishTurn = finish;
     }
 
-    // Every click counts: clicks during a turn are queued, and the book keeps
-    // turning (a little faster) until it reaches the page you asked for.
-    // The counter shows that page straight away.
+    // Every click counts and answers at once: a click during a turn lands
+    // the turning page straight away and starts the next turn, so the book
+    // keeps up however fast you click. The counter shows the page you asked
+    // for immediately.
     function go(step) {
       const from = busy ? goal : index;
       const next = Math.min(Math.max(from + step, 0), total() - 1);
       if (next === from) return;
       goal = next;
       updateControls(goal);
-      if (!busy) advance();
+      if (busy) finishTurn?.(); // lands the current page, then turns the next
+      else advance();
     }
 
     function advance() {
@@ -479,12 +484,22 @@ const description = "Small moments and photographs, kept like an old logbook.";
       { once: true },
     );
 
-    prevBtn.addEventListener("click", () => go(-1));
-    nextBtn.addEventListener("click", () => go(1));
+    // Buttons react on press (not release) so turning feels instant; a
+    // keyboard Enter/Space still works through "click".
+    for (const [btn, step] of [[prevBtn, -1], [nextBtn, 1]]) {
+      btn.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault(); // no focus delay or text selection
+        go(step);
+      });
+      btn.addEventListener("click", (event) => {
+        if (event.detail === 0) go(step); // keyboard activation only
+      });
+    }
 
     // Swipe left/right to turn.
     let swiped = false;
-    const SWIPE = 40; // px
+    const SWIPE = 28; // px of sideways movement that turns the page
 
     // Touch: decide the direction on the first few pixels of movement. A
     // sideways swipe is locked in (the page won't scroll up or down while you
@@ -495,7 +510,8 @@ const description = "Small moments and photographs, kept like an old logbook.";
       (event) => {
         if (event.touches.length !== 1) return (touch = null);
         const t = event.touches[0];
-        touch = { x: t.clientX, y: t.clientY, axis: null };
+        touch = { x: t.clientX, y: t.clientY, axis: null, turned: false };
+        swiped = false;
       },
       { passive: true },
     );
@@ -506,41 +522,45 @@ const description = "Small moments and photographs, kept like an old logbook.";
         const t = event.touches[0];
         const dx = t.clientX - touch.x;
         const dy = t.clientY - touch.y;
-        if (!touch.axis && Math.hypot(dx, dy) > 8) {
+        if (!touch.axis && Math.hypot(dx, dy) > 6) {
           touch.axis = Math.abs(dx) > Math.abs(dy) * 0.8 ? "x" : "y";
         }
-        if (touch.axis === "x" && event.cancelable) event.preventDefault();
+        if (touch.axis !== "x") return;
+        if (event.cancelable) event.preventDefault();
+        // Turn as soon as the finger has moved far enough — no waiting for
+        // it to lift. One turn per swipe.
+        if (!touch.turned && Math.abs(dx) > SWIPE) {
+          touch.turned = true;
+          swiped = true;
+          go(dx < 0 ? 1 : -1);
+        }
       },
       { passive: false },
     );
-    stage.addEventListener("touchend", (event) => {
-      if (!touch) return;
-      const t = event.changedTouches[0];
-      const dx = t.clientX - touch.x;
-      const axis = touch.axis;
-      touch = null;
-      swiped = axis === "x" && Math.abs(dx) > SWIPE;
-      if (swiped) go(dx < 0 ? 1 : -1);
-    });
+    stage.addEventListener("touchend", () => (touch = null));
     stage.addEventListener("touchcancel", () => (touch = null));
 
     // Mouse: drag sideways to turn (text and photos are not selectable or
     // draggable in the book, so dragging doesn't highlight anything).
-    let startX = null;
-    let startY = null;
+    let drag = null;
     stage.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "touch") return;
-      startX = event.clientX;
-      startY = event.clientY;
+      if (event.pointerType === "touch" || event.button !== 0) return;
+      drag = { x: event.clientX, y: event.clientY };
+      swiped = false;
     });
-    stage.addEventListener("pointerup", (event) => {
-      if (event.pointerType === "touch" || startX === null) return;
-      const dx = event.clientX - startX;
-      const dy = event.clientY - startY;
-      startX = null;
-      swiped = Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy);
-      if (swiped) go(dx < 0 ? 1 : -1);
+    stage.addEventListener("pointermove", (event) => {
+      if (!drag) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy)) {
+        drag = null; // one turn per drag, right away
+        swiped = true;
+        go(dx < 0 ? 1 : -1);
+      }
     });
+    const endDrag = () => (drag = null);
+    stage.addEventListener("pointerup", endDrag);
+    stage.addEventListener("pointerleave", endDrag);
     stage.addEventListener("dragstart", (event) => event.preventDefault());
     // A swipe that ends on a photo turns the page instead of opening it.
     stage.addEventListener(
@@ -562,6 +582,9 @@ const description = "Small moments and photographs, kept like an old logbook.";
       resizeTimer = setTimeout(refit, 150);
     };
     window.addEventListener("resize", onResize);
+    // Also when the layout switches (phone / one page / spread) without a resize event.
+    desktopQuery.addEventListener("change", onResize);
+    phoneQuery.addEventListener("change", onResize);
     document.addEventListener("astro:before-swap", () => window.removeEventListener("resize", onResize), {
       once: true,
     });
@@ -956,7 +979,13 @@ const description = "Small moments and photographs, kept like an old logbook.";
     z-index: 5;
     width: calc(50% - 7px);
     transform-style: preserve-3d;
+    will-change: transform;
     pointer-events: none;
+  }
+  /* The turning copy skips the paper grain: it is costly to redraw on every
+     frame of the turn and nobody sees it while the page is moving. */
+  .book-stage :global(.leaf .page::after) {
+    display: none;
   }
   .book-stage :global(.leaf.is-turning) {
     transition: transform var(--turn, 0.9s) cubic-bezier(0.45, 0.05, 0.25, 1);

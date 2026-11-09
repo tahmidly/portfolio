@@ -1,0 +1,194 @@
+---
+import { moments } from "../data/moments";
+
+// Homepage section pointing to the Photobook: the newest few moments as a
+// row of photos (same header style as Featured projects / Recent writing).
+const latest = moments.slice(0, 4);
+const shortDate = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+---
+
+<section class="pb" id="photobook">
+  <div class="pb-inner">
+    <header class="pb-header">
+      <div>
+        <p class="pb-label">Photobook</p>
+        <h2 class="pb-title">Check out my photobook</h2>
+        <p class="pb-sub">Small moments and photographs, kept like an old book.</p>
+      </div>
+      <a class="pb-btn" href="/photobook">
+        Open the photobook
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="m13 6 6 6-6 6" />
+        </svg>
+      </a>
+    </header>
+
+    <ul class="pb-grid">
+      {latest.map((moment) => (
+        <li>
+          <a class="pb-card" href={`/photobook/${moment.slug}/`}>
+            <span class="pb-photo">
+              <img src={moment.image} alt={moment.alt} width="450" height="560"
+                loading="lazy" decoding="async" />
+            </span>
+            <span class="pb-name">{moment.title}</span>
+            <span class="pb-meta">{moment.place} · {shortDate(moment.date)}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* Sits after Recent writing, so no extra space on top. */
+  .pb {
+    background: var(--bg);
+    padding: 0 0 7.5rem;
+  }
+  .pb-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 var(--container-pad);
+  }
+
+  /* ─── Header (same as the other homepage sections) ─── */
+  .pb-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--stroke);
+  }
+  .pb-label {
+    margin: 0 0 0.9rem;
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pb-title {
+    margin: 0 0 0.6rem;
+    font-family: var(--font-heading);
+    font-size: 40px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--text);
+  }
+  .pb-sub {
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 17px;
+    line-height: 28px;
+    color: var(--muted);
+  }
+  .pb-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+    height: 42px;
+    padding: 0 1.15rem;
+    border: 1px solid var(--stroke);
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--bg) 60%, white);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+  }
+  .pb-btn svg {
+    transition: transform 0.2s ease;
+  }
+  .pb-btn:hover {
+    border-color: var(--text);
+  }
+  .pb-btn:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* ─── Four photos in a row, black and white like the hero ─── */
+  .pb-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pb-card {
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+    text-decoration: none;
+  }
+  .pb-photo {
+    display: block;
+    aspect-ratio: 4 / 5;
+    margin-bottom: 0.9rem;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  .pb-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(0.85);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pb-card:hover .pb-photo img {
+    transform: scale(1.04);
+  }
+  .pb-name {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .pb-meta {
+    margin-top: 0.25rem;
+    font-family: var(--font-text);
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 860px) {
+    .pb-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.75rem 1rem;
+    }
+  }
+  @media (max-width: 640px) {
+    .pb {
+      padding-bottom: 5rem;
+    }
+    .pb-inner {
+      padding: 0 1rem;
+    }
+    .pb-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
+    }
+    .pb-title {
+      font-size: 32px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pb-photo img {
+      transition: none;
+    }
+  }
+</style>

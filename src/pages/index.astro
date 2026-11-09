@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.jsx";
 import FeaturedWorks from "../components/FeaturedWorks.jsx";
 import RecentWriting from "../components/RecentWriting.jsx";
+import PhotobookTeaser from "../components/PhotobookTeaser.astro";
 import { getPublishedPosts, toListPost } from "../lib/blog";
 import { AUTHOR, SITE_URL, absoluteUrl } from "../lib/site";
 import { socialLinks } from "../data/portfolio";
@@ -40,5 +41,6 @@ const jsonLd = [
     <Hero />
     <FeaturedWorks works={featuredWorks} />
     <RecentWriting posts={recentPosts} />
+    <PhotobookTeaser />
   </main>
 </BaseLayout>
