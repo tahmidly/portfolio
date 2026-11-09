@@ -31,7 +31,7 @@ export default function Explorations() {
               trigger: section,
               start: "top bottom",
               end: "bottom top",
-              scrub: 1,
+              scrub: true,
             },
           },
         );
@@ -48,7 +48,7 @@ export default function Explorations() {
               trigger: section,
               start: "top bottom",
               end: "bottom top",
-              scrub: 1.5,
+              scrub: true,
             },
           },
         );

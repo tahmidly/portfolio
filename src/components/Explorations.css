@@ -99,19 +99,22 @@
   border: 1px solid var(--stroke);
   pointer-events: auto;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  /* GSAP moves these on scroll; no CSS transition on transform here, or every
+     scroll update gets eased again and the parallax lags behind. */
+  will-change: transform;
 }
 .gallery-item:nth-child(even) {
   margin-top: 6rem;
-}
-.gallery-item:hover {
-  transform: scale(1.03) rotate(-1deg);
 }
 .gallery-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+.gallery-item:hover img {
+  transform: scale(1.06) rotate(-1deg);
 }
 
 /* ─── Phones: compact layout ───

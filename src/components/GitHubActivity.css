@@ -5,8 +5,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   background: rgba(10, 10, 10, 0.42);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -21,6 +19,7 @@
   margin-bottom: 0.7rem;
   font-size: 10px;
   letter-spacing: 0.12em;
+  font-family: var(--font-label);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -87,38 +86,41 @@
 
 .github-activity-cell.level-1,
 .github-activity-legend-cell.level-1 {
-  background: rgba(27, 204, 254, 0.25);
+  background: rgba(45, 45, 45, 0.25);
 }
 .github-activity-cell.level-2,
 .github-activity-legend-cell.level-2 {
-  background: rgba(27, 204, 254, 0.45);
+  background: rgba(45, 45, 45, 0.45);
 }
 .github-activity-cell.level-3,
 .github-activity-legend-cell.level-3 {
-  background: rgba(27, 204, 254, 0.7);
+  background: rgba(45, 45, 45, 0.7);
 }
 .github-activity-cell.level-4,
 .github-activity-legend-cell.level-4 {
-  background: #1bccfe;
+  background: #2d2d2d;
 }
 .github-activity-cell.level-4 {
-  animation: github-cell-glow 4s ease-in-out infinite;
-  animation-delay: calc(var(--i, 0) * -57ms);
+  box-shadow: 0 0 6px rgba(45, 45, 45, 0.45);
 }
 
 .github-activity-sweep {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 220%;
   pointer-events: none;
   background: linear-gradient(
     110deg,
     transparent 35%,
-    rgba(27, 204, 254, 0.16) 50%,
+    rgba(45, 45, 45, 0.16) 50%,
     transparent 65%
   );
-  background-size: 220% 100%;
+  /* Moved with transform (GPU), not background-position, so it never
+     repaints the card while you scroll. */
   animation: github-sweep 5.5s linear infinite;
-  mix-blend-mode: screen;
+  will-change: transform;
 }
 
 .github-activity-legend {
@@ -129,6 +131,7 @@
   margin-top: 0.55rem;
   font-size: 9px;
   letter-spacing: 0.15em;
+  font-family: var(--font-label);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -139,22 +142,13 @@
 
 @keyframes github-sweep {
   0% {
-    background-position: 180% 0;
+    transform: translateX(-98%);
   }
   100% {
-    background-position: -80% 0;
+    transform: translateX(44%);
   }
 }
 
-@keyframes github-cell-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 3px rgba(27, 204, 254, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 9px rgba(27, 204, 254, 0.65);
-  }
-}
 
 @media (max-width: 640px) {
   .github-activity {
@@ -180,4 +174,14 @@
   .github-activity-legend {
     display: none;
   }
+}
+
+.light .github-activity {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+}
+.light .github-activity-cell:not([class*="level-"]),
+.light .github-activity-legend-cell:not([class*="level-"]) {
+  background: rgba(0, 0, 0, 0.07);
 }

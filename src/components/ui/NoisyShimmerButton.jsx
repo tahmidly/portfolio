@@ -9,7 +9,7 @@ export default function NoisyShimmerButton({
   return (
     <ShimmerButton
       className={`btn-shimmer-noise ${className}`.trim()}
-      shimmerColor="#1bccfe"
+      shimmerColor="#2d2d2d"
       shimmerSize="0.06em"
       shimmerDuration="2.8s"
       borderRadius="100px"

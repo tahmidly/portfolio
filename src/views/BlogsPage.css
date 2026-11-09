@@ -17,7 +17,7 @@
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    rgba(27, 204, 254, 0.14),
+    rgba(45, 45, 45, 0.14),
     transparent 65%
   );
   pointer-events: none;
@@ -158,6 +158,7 @@
   gap: 0.6rem;
   font-size: 0.68rem;
   letter-spacing: 0.12em;
+  font-family: var(--font-label);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -198,7 +199,7 @@
 .blog-card:hover .blog-arrow {
   background: var(--accent);
   border-color: var(--accent);
-  color: #04141a;
+  color: var(--bg);
 }
 
 .blogs-footer {

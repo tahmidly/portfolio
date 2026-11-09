@@ -6,28 +6,6 @@
   overflow: hidden;
 }
 
-.footer-video-wrap {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-.footer-video {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scaleY(-1);
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: cover;
-}
-.footer-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-}
-
 .footer-inner {
   position: relative;
   z-index: 10;
@@ -64,6 +42,7 @@
 .footer-cta-label {
   font-size: 11px;
   color: var(--muted);
+  font-family: var(--font-label);
   text-transform: uppercase;
   letter-spacing: 0.3em;
   margin-bottom: 1.5rem;
@@ -127,4 +106,11 @@
   border-radius: 50%;
   background: #4ade80;
   animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.light .marquee-wrap {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.light .marquee-text {
+  color: rgba(0, 0, 0, 0.1);
 }

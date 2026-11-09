@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { navigate } from "astro:transitions/client";
-import { refreshScrollTriggers, ScrollTrigger } from "../lib/gsap";
-import { navLinks, socialLinks } from "../data/portfolio";
+import { socialLinks } from "../data/portfolio";
 import "./Navbar.css";
 
-/** Fallback for the back button: a post → its list, a list → home. */
 /** A single blog post: "/blogs/<slug>" (not the "/blogs" list itself). */
 function isBlogPost(pathname) {
   return pathname.startsWith("/blogs/") && pathname.length > "/blogs/".length;
@@ -15,20 +13,6 @@ function trimSlash(pathname) {
   let path = pathname;
   while (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
   return path;
-}
-
-function parentPath(pathname) {
-  if (isBlogPost(pathname)) return "/blogs";
-  return "/";
-}
-
-function BackIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M19 12H5" />
-      <path d="M12 19l-7-7 7-7" />
-    </svg>
-  );
 }
 
 function MenuIcon() {
@@ -52,20 +36,26 @@ function CloseIcon() {
 
 // Persisted across client-side navigations (transition:persist in
 // BaseLayout); `pathname` is re-passed by each page.
-// Desktop: the pill. Phones (≤ 640px):
-//   [back]   [Home · Works · Blogs]   [logo]
-// (The ☰ button + right-side drawer are commented out for now.)
+// Desktop: logo left, links + "Say hello" right. Phones (≤ 640px):
+//   [☰]   [logo]   [Say hello]   — ☰ opens a drawer with every link.
+// Desktop links for a personal site. Blog exists; the others are pages still
+// to build. `extra` links hide on small tablets to save room.
+const DESKTOP_LINKS = [
+  { label: "About", href: "/about" },
+  { label: "Blog", href: "/blogs" },
+  { label: "Moments", href: "/moments" },
+  { label: "Bookshelf", href: "/bookshelf", extra: true },
+  { label: "Now", href: "/now", extra: true },
+];
+const CONTACT_EMAIL = "redfoxtahmid@gmail.com";
+
 export default function Navbar({ pathname: rawPathname = "/" }) {
   const pathname = trimSlash(rawPathname);
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState("hero");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const visitsRef = useRef(0);
   const onHome = pathname === "/";
-  const onBlogs = pathname.startsWith("/blogs");
-  const onWorks = pathname === "/works";
-  // Blog post reading page: the navbar scrolls away (not sticky); its back
-  // button and the page's theme toggle stay pinned instead.
+  // Blog post reading page: the navbar scrolls away (not sticky); the page's
+  // back button and theme toggle stay pinned instead.
   const reading = isBlogPost(pathname);
 
   useEffect(() => {
@@ -73,43 +63,6 @@ export default function Navbar({ pathname: rawPathname = "/" }) {
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [pathname]);
-
-  useEffect(() => {
-    const worksSection = document.querySelector("#works");
-    const journalSection = document.querySelector("#journal");
-
-    const worksTrigger = worksSection
-      ? ScrollTrigger.create({
-          trigger: worksSection,
-          start: "top center",
-          end: "bottom center",
-          onEnter: () => setActive("works"),
-          onLeaveBack: () => setActive("hero"),
-        })
-      : null;
-
-    const journalTrigger = journalSection
-      ? ScrollTrigger.create({
-          trigger: journalSection,
-          start: "top center",
-          end: "bottom center",
-          onEnter: () => setActive("journal"),
-          onLeaveBack: () => setActive("works"),
-        })
-      : null;
-    refreshScrollTriggers();
-
-    return () => {
-      worksTrigger?.kill();
-      journalTrigger?.kill();
-    };
-  }, [pathname]);
-
-  // Count page views in this tab (the navbar persists across swaps), so the
-  // back button knows whether there is a page of this site to go back to.
-  useEffect(() => {
-    visitsRef.current += 1;
   }, [pathname]);
 
   // Drawer: close on page change and Escape; lock page scroll while open.
@@ -129,41 +82,13 @@ export default function Navbar({ pathname: rawPathname = "/" }) {
     };
   }, [drawerOpen]);
 
-  // Came from another page of this site → go back to it. Otherwise go up a
-  // level (post → /blogs, list → home); on Home itself, use browser history.
-  const goBack = () => {
-    let fromThisSite = visitsRef.current > 1;
-    try {
-      fromThisSite ||= Boolean(document.referrer) && new URL(document.referrer).origin === location.origin;
-    } catch {
-      // ignore malformed referrers
-    }
-    if (fromThisSite && window.history.length > 1) {
-      window.history.back();
-    } else if (!onHome) {
-      navigate(parentPath(pathname));
-    } else if (window.history.length > 1) {
-      window.history.back();
-    }
-  };
-
   const handleNavClick = (sectionId) => {
-    setActive(sectionId);
     setDrawerOpen(false);
     if (pathname !== "/") {
       navigate(sectionId === "hero" ? "/" : `/#${sectionId}`);
       return;
     }
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const sayHi = () => {
-    setDrawerOpen(false);
-    if (onHome) {
-      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      navigate("/#contact");
-    }
   };
 
   const goHomeTop = (event) => {
@@ -178,82 +103,57 @@ export default function Navbar({ pathname: rawPathname = "/" }) {
       className={`navbar${reading ? " navbar--static" : ""}`}
       id="navbar"
     >
-      {/* ─── Desktop / tablet pill ─── */}
-      <div className={`nav-pill nav-desktop${scrolled ? " scrolled" : ""}`}>
-        <div className="nav-logo" aria-label="Meer Tahmid">
-          <img
-            src="/logo-mark.png"
-            alt="Meer Tahmid logo"
-            className="nav-logo-img"
-          />
-        </div>
-        <div className="nav-divider" />
-        {navLinks.map((link) => (
-          <button
-            key={link.id}
-            type="button"
-            className={`nav-link${
-              onHome && active === link.id ? " active" : ""
-            }`}
-            data-section={link.id}
-            onClick={() => handleNavClick(link.id)}
-          >
-            {link.label}
-          </button>
-        ))}
-        <a href="/works" className={`nav-link${onWorks ? " active" : ""}`}>
-          Works
-        </a>
-        <a href="/blogs" className={`nav-link${onBlogs ? " active" : ""}`}>
-          Blogs
-        </a>
-        <div className="nav-divider" />
-        <button type="button" className="nav-sayhi" onClick={sayHi}>
-          <div className="nav-sayhi-bg" />
-          <div className="nav-sayhi-inner">Say hi ↗</div>
-        </button>
-      </div>
-
-      {/* ─── Phone bar ─── */}
-      <div className="nav-mobile">
-        {/* Always shown. On blog posts it stays pinned while the rest of the
-            navbar scrolls away (see .navbar--static in Navbar.css). */}
-        <button type="button" className="nav-round nav-back" aria-label="Go back" onClick={goBack}>
-          <BackIcon />
-        </button>
-
-        <div className={`nav-mobile-links${scrolled ? " scrolled" : ""}`}>
-          <a href="/" className={`nav-link${onHome ? " active" : ""}`} onClick={goHomeTop}>
-            Home
+      {/* ─── Desktop / tablet: logo left, links + "Say hi" pill right ─── */}
+      <div className="nav-bar nav-desktop">
+        <div className="nav-bar-inner">
+          <a href="/" className="nav-logo" aria-label="Meer Tahmid — home" onClick={goHomeTop}>
+            <img src="/logom-small.png" alt="" width={33} height={36} className="nav-logo-img" />
           </a>
-          <a href="/works" className={`nav-link${onWorks ? " active" : ""}`}>
-            Works
-          </a>
-          <a href="/blogs" className={`nav-link${onBlogs ? " active" : ""}`}>
-            Blogs
-          </a>
-        </div>
-
-        <div className="nav-mobile-right">
-          <a href="/" className="nav-mobile-logo" aria-label="Meer Tahmid — home" onClick={goHomeTop}>
-            <img src="/logo-mark.png" alt="" width={40} height={40} className="nav-logo-img" />
-          </a>
-          {/* Hamburger menu disabled for now (drawer below is commented out too).
-          <button
-            type="button"
-            className="nav-round"
-            aria-label="Open menu"
-            aria-expanded={drawerOpen}
-            aria-controls="nav-drawer"
-            onClick={() => setDrawerOpen(true)}
-          >
-            <MenuIcon />
-          </button>
-          */}
+          <div className="nav-links">
+            {DESKTOP_LINKS.map((link) => {
+              const current =
+                pathname === link.href || pathname.startsWith(`${link.href}/`);
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className={`nav-link${link.extra ? " nav-link--extra" : ""}${current ? " active" : ""}`}
+                  aria-current={current ? "page" : undefined}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="nav-cta">
+              Say hello
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* ─── Phone drawer (slides in from the right) — disabled for now.
+      {/* ─── Phone bar: [☰]   [logo]   [Say hello] ─── */}
+      <div className={`nav-mobile${scrolled ? " scrolled" : ""}`}>
+        <button
+          type="button"
+          className="nav-menu-btn"
+          aria-label="Open menu"
+          aria-expanded={drawerOpen}
+          aria-controls="nav-drawer"
+          onClick={() => setDrawerOpen(true)}
+        >
+          <MenuIcon />
+        </button>
+
+        <a href="/" className="nav-mobile-logo" aria-label="Meer Tahmid — home" onClick={goHomeTop}>
+          <img src="/logom-small.png" alt="" width={33} height={36} className="nav-logo-img" />
+        </a>
+
+        <a href={`mailto:${CONTACT_EMAIL}`} className="nav-mobile-cta">
+          Say hello
+        </a>
+      </div>
+
+      {/* ─── Phone drawer (slides in from the left) ─── */}
       <div
         className={`nav-drawer-backdrop${drawerOpen ? " is-open" : ""}`}
         onClick={() => setDrawerOpen(false)}
@@ -268,32 +168,36 @@ export default function Navbar({ pathname: rawPathname = "/" }) {
       >
         <div className="nav-drawer-head">
           <a href="/" className="nav-mobile-logo" aria-label="Meer Tahmid — home" onClick={goHomeTop}>
-            <img src="/logo-mark.png" alt="" width={40} height={40} className="nav-logo-img" />
+            <img src="/logom-small.png" alt="" width={33} height={36} className="nav-logo-img" />
           </a>
-          <button type="button" className="nav-round" aria-label="Close menu" onClick={() => setDrawerOpen(false)}>
+          <button type="button" className="nav-menu-btn" aria-label="Close menu" onClick={() => setDrawerOpen(false)}>
             <CloseIcon />
           </button>
         </div>
 
         <div className="nav-drawer-links">
-          <button
-            type="button"
-            className={`nav-drawer-link${onHome ? " active" : ""}`}
-            onClick={() => handleNavClick("hero")}
-          >
+          <a href="/" className={`nav-drawer-link${onHome ? " active" : ""}`} onClick={goHomeTop}>
             Home
-          </button>
-          <a href="/works" className={`nav-drawer-link${onWorks ? " active" : ""}`}>
-            Works
           </a>
-          <a href="/blogs" className={`nav-drawer-link${onBlogs ? " active" : ""}`}>
-            Blogs
-          </a>
+          {DESKTOP_LINKS.map((link) => {
+            const current =
+              pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <a
+                key={link.label}
+                href={link.href}
+                className={`nav-drawer-link${current ? " active" : ""}`}
+                aria-current={current ? "page" : undefined}
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </div>
 
-        <button type="button" className="nav-drawer-cta" onClick={sayHi}>
-          Say hi ↗
-        </button>
+        <a href={`mailto:${CONTACT_EMAIL}`} className="nav-drawer-cta">
+          Say hello
+        </a>
 
         <div className="nav-drawer-social">
           {socialLinks.map((link) => (
@@ -303,7 +207,6 @@ export default function Navbar({ pathname: rawPathname = "/" }) {
           ))}
         </div>
       </aside>
-      */}
     </nav>
   );
 }

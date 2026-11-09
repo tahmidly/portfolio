@@ -10,30 +10,55 @@
   --text: hsl(0 0% 96%);
   --muted: hsl(0 0% 53%);
   --stroke: hsl(0 0% 12%);
-  --accent: #1bccfe;
-  --accent-strong: #0a9fcb;
-  --font-body: "Inter", sans-serif;
-  --font-display: "Instrument Serif", serif;
-  --font-title: "Bricolage Grotesque", "Bricolage Grotesque Fallback", system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-reading: "Questrial", "Questrial Fallback", system-ui, -apple-system,
+  /* Accent is #2d2d2d (see .light). On dark pages that would be invisible,
+     so links and highlights there use the text color instead. */
+  --accent: var(--text);
+  --accent-strong: var(--text);
+
+  /* ─── Three fonts for the whole site ───
+     headings (and the navbar) · paragraphs and body text · small labels */
+  --font-heading: "Fraunces", Georgia, serif;
+  --font-text: "Questrial", "Questrial Fallback", system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-label: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Older names used around the codebase, mapped onto the three above. */
+  --font-body: var(--font-text);
+  --font-reading: var(--font-text);
+  --font-display: var(--font-heading);
+  --font-title: var(--font-heading);
+  --font-hero: var(--font-heading);
+  --font-nav: var(--font-heading);
+
+  /* Page container: 1080px wide with 32px side padding (1016px of content). */
+  --container: 1080px;
+  --container-pad: 32px;
 }
 
+/* Light theme: #2d2d2d for headings and main text, #555 for paragraphs,
+   labels and other secondary text. */
 .light {
   --bg: hsl(0 0% 98%);
   --surface: hsl(0 0% 95%);
-  --text: hsl(0 0% 9%);
-  --muted: hsl(0 0% 40%);
+  --text: #2d2d2d;
+  --muted: #555;
   --stroke: hsl(0 0% 87%);
-  --accent: #0a9fcb;
-  --accent-strong: #087ea4;
+  --accent: #2d2d2d;
+  --accent-strong: #2d2d2d;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
 }
 
 html {
   scroll-behavior: smooth;
   /* Always keep room for the scrollbar so the page never shifts sideways
-     when it appears or disappears (e.g. while the intro loader is up). */
+     when it appears or disappears (e.g. on pages shorter than the window). */
   scrollbar-gutter: stable;
 }
 
@@ -46,7 +71,7 @@ body {
 }
 
 .accent-gradient {
-  background: linear-gradient(90deg, #1bccfe 0%, #0a9fcb 100%);
+  background: #2d2d2d;
 }
 
 .font-display {
@@ -141,6 +166,7 @@ body {
 .eyebrow-text {
   font-size: 11px;
   color: var(--muted);
+  font-family: var(--font-label);
   text-transform: uppercase;
   letter-spacing: 0.3em;
 }
@@ -191,15 +217,10 @@ body {
 
 /* ─── UTILITIES ─── */
 .text-gradient {
-  background: linear-gradient(90deg, #1bccfe, #0a9fcb);
+  background: #2d2d2d;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-
-.reveal-up {
-  opacity: 0;
-  transform: translateY(30px);
 }
 
 .section-divider {
@@ -216,7 +237,7 @@ body {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 30% 25%, rgba(27, 204, 254, 0.35), transparent 60%),
+    radial-gradient(circle at 30% 25%, rgba(45, 45, 45, 0.35), transparent 60%),
     linear-gradient(135deg, #12202b 0%, #0d1117 100%);
   color: #e5e5e5;
   font-family: var(--font-title);
@@ -227,7 +248,7 @@ body {
 }
 .light .cover-fallback {
   background:
-    radial-gradient(circle at 30% 25%, rgba(10, 159, 203, 0.28), transparent 60%),
+    radial-gradient(circle at 30% 25%, rgba(45, 45, 45, 0.28), transparent 60%),
     linear-gradient(135deg, #e8f4f8 0%, #dfe6ea 100%);
   color: #2d2d2d;
 }

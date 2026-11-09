@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { gsap } from "../lib/gsap";
+import { useEffect, useMemo, useState } from "react";
 import "./GitHubActivity.css";
 
 // Override with PUBLIC_GITHUB_USERNAME if needed.
@@ -93,7 +92,6 @@ function formatDate(isoDate) {
 
 export default function GitHubActivity() {
   const [data, setData] = useState(buildDemoData);
-  const gridRef = useRef(null);
 
   useEffect(() => {
     if (!GITHUB_USERNAME) return undefined;
@@ -113,35 +111,13 @@ export default function GitHubActivity() {
     };
   }, []);
 
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return undefined;
-
-    const cells = grid.querySelectorAll(".github-activity-cell");
-    const tween = gsap.fromTo(
-      cells,
-      { scale: 0, opacity: 0 },
-      {
-        scale: 1,
-        opacity: 1,
-        duration: 0.5,
-        ease: "back.out(2)",
-        stagger: { each: 0.004, from: "start" },
-        delay: 0.9,
-        onComplete: () => gsap.set(cells, { clearProps: "transform" }),
-      },
-    );
-
-    return () => tween.kill();
-  }, [data]);
-
   const contributionLabel = useMemo(() => {
     const noun = data.total === 1 ? "contribution" : "contributions";
     return `${data.total.toLocaleString()} ${noun} in the last year`;
   }, [data.total]);
 
   return (
-    <div className="github-activity blur-in">
+    <div className="github-activity">
       <div className="github-activity-header">
         <span className="github-activity-title">
           <GitHubIcon />
@@ -158,7 +134,6 @@ export default function GitHubActivity() {
       <div className="github-activity-scroll">
         <div
           className="github-activity-grid"
-          ref={gridRef}
           role="img"
           aria-label={`GitHub contribution graph — ${contributionLabel}`}
         >

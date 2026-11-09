@@ -39,7 +39,7 @@
 }
 .journal-entry:hover {
   background: var(--surface);
-  border-color: rgba(27, 204, 254, 0.25);
+  border-color: rgba(45, 45, 45, 0.25);
 }
 
 .journal-thumb {
@@ -86,7 +86,7 @@
   transition: all 0.2s ease;
 }
 .journal-entry:hover .journal-arrow {
-  background: linear-gradient(90deg, #1bccfe, #0a9fcb);
+  background: #2d2d2d;
   border-color: transparent;
   color: white;
 }
@@ -110,7 +110,7 @@
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 6px rgba(27, 204, 254, 0.12);
+  box-shadow: 0 0 0 6px rgba(45, 45, 45, 0.12);
   animation: journal-empty-pulse 2.4s ease-in-out infinite;
 }
 .journal-empty-title {
@@ -124,8 +124,8 @@
   color: var(--muted);
 }
 @keyframes journal-empty-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(27, 204, 254, 0.16); }
-  50% { box-shadow: 0 0 0 9px rgba(27, 204, 254, 0.04); }
+  0%, 100% { box-shadow: 0 0 0 4px rgba(45, 45, 45, 0.16); }
+  50% { box-shadow: 0 0 0 9px rgba(45, 45, 45, 0.04); }
 }
 @media (prefers-reduced-motion: reduce) {
   .journal-empty-dot {
@@ -137,4 +137,11 @@
     border-radius: 1.5rem;
     padding: 1.1rem 1.2rem;
   }
+}
+
+.light .journal-entry {
+  background: #fff;
+}
+.light .journal-entry:hover {
+  background: var(--surface);
 }

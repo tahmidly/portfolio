@@ -1,4 +1,3 @@
-import Reveal from "./Reveal";
 import NoisyShimmerButton from "./ui/NoisyShimmerButton";
 import "./SectionHeader.css";
 
@@ -11,7 +10,7 @@ export default function SectionHeader({
   actionOnClick,
 }) {
   return (
-    <Reveal className="section-header" start="top 85%">
+    <div className="section-header">
       <div className="section-header-row">
         <div>
           <div className="section-eyebrow">
@@ -37,6 +36,6 @@ export default function SectionHeader({
           )
         ) : null}
       </div>
-    </Reveal>
+    </div>
   );
 }

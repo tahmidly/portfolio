@@ -15,7 +15,7 @@
   transform: translateX(-50%);
   background: radial-gradient(
     ellipse at center,
-    rgba(27, 204, 254, 0.1),
+    rgba(45, 45, 45, 0.1),
     transparent 70%
   );
   filter: blur(40px);
@@ -51,6 +51,7 @@
   gap: 0.6rem;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
+  font-family: var(--font-label);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -244,7 +245,7 @@
   color: inherit;
 }
 .post-content .post-mark-cyan {
-  background: rgba(27, 204, 254, 0.25);
+  background: rgba(45, 45, 45, 0.25);
 }
 .post-content .post-mark-yellow {
   background: rgba(250, 204, 21, 0.28);
@@ -293,7 +294,7 @@
   background: var(--surface);
 }
 .post-nav-card:hover {
-  border-color: rgba(27, 204, 254, 0.35);
+  border-color: rgba(45, 45, 45, 0.35);
   background: var(--surface);
   transform: translateY(-2px);
 }
@@ -324,6 +325,7 @@
 .post-nav-label {
   font-size: 0.65rem;
   letter-spacing: 0.14em;
+  font-family: var(--font-label);
   text-transform: uppercase;
   color: var(--muted);
   transition: color 0.2s ease;

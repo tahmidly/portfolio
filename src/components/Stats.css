@@ -29,6 +29,7 @@
 .stat-label {
   font-size: 0.8rem;
   color: var(--muted);
+  font-family: var(--font-label);
   text-transform: uppercase;
   letter-spacing: 0.15em;
 }

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { navigate } from "astro:transitions/client";
 import SectionHeader from "./SectionHeader";
-import Reveal from "./Reveal";
 import { CoverFallback } from "./CoverImage";
 import "./Journal.css";
 
@@ -29,7 +28,7 @@ export default function Journal({ entries = [] }) {
         />
 
         {entries.length === 0 ? (
-          <Reveal className="journal-empty">
+          <div className="journal-empty">
             <span className="journal-empty-dot" aria-hidden="true" />
             <div>
               <p className="journal-empty-title">First posts are on the way</p>
@@ -38,13 +37,12 @@ export default function Journal({ entries = [] }) {
                 soon.
               </p>
             </div>
-          </Reveal>
+          </div>
         ) : null}
 
         <div className="journal-list">
           {entries.map((entry) => (
-            <Reveal
-              as="a"
+            <a
               key={entry.id}
               href={`/blogs/${entry.id}`}
               className="journal-entry"
@@ -70,7 +68,7 @@ export default function Journal({ entries = [] }) {
                 </div>
               </div>
               <div className="journal-arrow">↗</div>
-            </Reveal>
+            </a>
           ))}
         </div>
       </div>

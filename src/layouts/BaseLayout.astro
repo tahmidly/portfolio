@@ -1,5 +1,5 @@
 ---
-import { ClientRouter, fade } from "astro:transitions";
+import { ClientRouter } from "astro:transitions";
 import Navbar from "../components/Navbar.jsx";
 import { DEFAULT_OG_IMAGE, SITE_URL, absoluteUrl } from "../lib/site";
 import "../styles/tailwind.css";
@@ -31,11 +31,10 @@ const ogImages = hasOwnImage
   ? og.images
   : [{ ...DEFAULT_OG_IMAGE, url: absoluteUrl(DEFAULT_OG_IMAGE.url) }];
 // Short crossfade between pages: smooth, without slowing clicks down.
-const pageFade = fade({ duration: "0.2s" });
 ---
 
 <!doctype html>
-<html lang="en" transition:animate={pageFade}>
+<html lang="en" transition:animate="none">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -87,12 +86,12 @@ const pageFade = fade({ duration: "0.2s" });
       ) : null
     }
 
-    <link rel="icon" type="image/png" href="/logo-mark.png" />
-    <link rel="preload" href="/logo-mark.png" as="image" fetchpriority="high" />
+    <link rel="icon" type="image/png" href="/logom-small.png" />
+    <link rel="preload" href="/logom-small.png" as="image" fetchpriority="high" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Questrial&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Questrial&display=swap"
       rel="stylesheet"
     />
 
@@ -107,9 +106,8 @@ const pageFade = fade({ duration: "0.2s" });
 
     <!--
       Runs before first paint and after every client-side page swap (the swap
-      replaces <html> attributes):
-      - re-applies the blog light theme so post pages never flash dark
-      - marks the intro loader as already shown, so returning home skips it
+      replaces <html> attributes): applies the light theme on the homepage and
+      (when chosen) on blog posts, so those pages never flash dark.
     -->
     <script is:inline>
       (function () {
@@ -118,15 +116,16 @@ const pageFade = fade({ duration: "0.2s" });
         function apply() {
           var root = document.documentElement;
           var path = location.pathname;
-          // Blog posts only ("/blogs/<slug>"), not the "/blogs/" list.
           var post = path.replace(/\/+$/, "");
+          // The homepage is always light.
+          var light = post === "";
+          // Blog posts ("/blogs/<slug>", not the "/blogs/" list) follow the
+          // reader's saved choice.
           var themed = post.indexOf("/blogs/") === 0 && post.length > 7;
-          var light = false;
           try {
-            light = themed && localStorage.getItem("blog-theme") === "light";
+            if (themed) light = localStorage.getItem("blog-theme") === "light";
           } catch (e) {}
           root.classList.toggle("light", light);
-          if (window.__mtBooted) root.classList.add("booted");
         }
         apply();
         document.addEventListener("astro:after-swap", apply);

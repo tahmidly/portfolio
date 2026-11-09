@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { navigate } from "astro:transitions/client";
 import SectionHeader from "./SectionHeader";
-import Reveal from "./Reveal";
 import { WorkCardContent, workLinkProps } from "./WorkCard";
 import "./SelectedWorks.css";
 
@@ -32,9 +31,9 @@ export default function SelectedWorks({ works = [] }) {
 
         <div className="bento-grid">
           {works.map((work) => (
-            <Reveal as="a" key={work.id} {...workLinkProps(work)}>
+            <a key={work.id} {...workLinkProps(work)}>
               <WorkCardContent work={work} />
-            </Reveal>
+            </a>
           ))}
         </div>
       </div>

@@ -13,7 +13,7 @@
   transform: translate(-50%, -50%);
   background: radial-gradient(
     ellipse at center,
-    rgba(27, 204, 254, 0.12),
+    rgba(45, 45, 45, 0.12),
     transparent 70%
   );
   filter: blur(10px);
@@ -109,8 +109,8 @@
   transform: translate(-50%, -50%) scale(0.65);
   background: radial-gradient(
     circle,
-    rgba(27, 204, 254, 0.32) 0%,
-    rgba(27, 204, 254, 0.12) 42%,
+    rgba(45, 45, 45, 0.32) 0%,
+    rgba(45, 45, 45, 0.12) 42%,
     transparent 72%
   );
   filter: blur(4px);

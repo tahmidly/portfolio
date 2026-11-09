@@ -50,7 +50,7 @@
 .featured-layout-option.is-active {
   border-color: var(--accent);
   color: var(--text);
-  background: rgba(27, 204, 254, 0.08);
+  background: rgba(45, 45, 45, 0.08);
 }
 .featured-layout-mini {
   display: grid;
