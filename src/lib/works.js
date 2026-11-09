@@ -3,6 +3,23 @@ import featured from "../data/featured.json";
 import { placeholderFor } from "../components/CoverImage.jsx";
 import { layoutFor, spanClass } from "./featuredLayouts";
 
+/**
+ * The bullet points under the "## What it does" heading of a project's
+ * Markdown body (plain text, Markdown markers removed). Used by /works.
+ */
+function highlightsFrom(body = "") {
+  const lines = body.split(/\r?\n/);
+  const start = lines.findIndex((line) => /^##\s+what it does\s*$/i.test(line.trim()));
+  if (start === -1) return [];
+  const items = [];
+  for (const line of lines.slice(start + 1)) {
+    if (/^#{1,6}\s/.test(line.trim())) break;
+    const match = line.match(/^\s*[-*]\s+(.*)$/);
+    if (match) items.push(match[1].replace(/[*_`]/g, "").trim());
+  }
+  return items;
+}
+
 /** Plain project object in the shape the components expect. */
 function toWork(entry) {
   const { data } = entry;
@@ -16,6 +33,7 @@ function toWork(entry) {
     alt: data.imageAlt || data.title,
     url: data.url || "",
     date: data.date.toISOString(),
+    highlights: highlightsFrom(entry.body),
     placeholder: placeholderFor(entry.id),
   };
 }

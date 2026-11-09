@@ -1,0 +1,119 @@
+---
+import { socialLinks } from "../data/portfolio";
+
+// Simple footer, shown on every page (added in BaseLayout):
+// logo + name on the left, social links in a row on the right.
+const EMAIL = "redfoxtahmid@gmail.com";
+const order = ["GitHub", "LinkedIn", "Instagram", "Facebook"];
+const links = [
+  ...[...socialLinks].sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label)),
+  { label: "Email", url: `mailto:${EMAIL}` },
+];
+---
+
+<footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-row">
+      <a class="sf-logo" href="/" aria-label="Meer Tahmid — home">
+        <img src="/logom-small.png" alt="" width="29" height="32" />
+        <span>Meer Tahmid</span>
+      </a>
+
+      <ul class="sf-links" aria-label="Elsewhere">
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.url}
+              {...(link.url.startsWith("http")
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+            >
+              {link.label} <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--bg);
+  }
+  /* Same container as the navbar and page content. */
+  .sf-inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 var(--container-pad);
+  }
+  /* The line spans the content width, like the lines on the pages. */
+  .sf-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 3rem 0 3.5rem;
+    border-top: 1px solid var(--stroke);
+  }
+
+  .sf-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .sf-logo img {
+    display: block;
+    height: 30px;
+    width: auto;
+  }
+  .sf-logo span {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  /* Social links side by side in one row. */
+  .sf-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.6rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sf-links a {
+    font-family: var(--font-text);
+    font-size: 15px;
+    color: var(--text);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+  .sf-links a:hover {
+    opacity: 0.6;
+  }
+  .sf-links span {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 640px) {
+    .sf-inner {
+      padding: 0 1rem;
+    }
+    /* Name on top, links wrapping underneath. */
+    .sf-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+      padding: 2.5rem 0 3rem;
+    }
+    .sf-links {
+      justify-content: flex-start;
+      gap: 0.6rem 1.5rem;
+    }
+  }
+</style>

@@ -1,11 +1,13 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import BlogsPage from "../../views/BlogsPage.jsx";
-import { getPublishedPosts } from "../../lib/blog";
+import RecentWriting from "../../components/RecentWriting.jsx";
+import { getPublishedPosts, toListPost } from "../../lib/blog";
 
-const posts = await getPublishedPosts();
+// Every published post from src/content/blog/, newest first — the same
+// classic list as the homepage's Recent writing.
+const posts = (await getPublishedPosts()).map(toListPost);
 const description =
-  "Perspectives on design, technology, and the craft of building things.";
+  "Notes on life, things I'm learning and small moments, newest first.";
 ---
 
 <BaseLayout
@@ -15,5 +17,29 @@ const description =
   og={{ title: "Blogs — Meer Tahmid", description }}
   rss
 >
-  <BlogsPage posts={posts} />
+  <main class="list-page">
+    <RecentWriting
+      posts={posts}
+      id="all-writing"
+      label="Writing"
+      title="All writing"
+      sub="Notes on life, things I'm learning and small moments, newest first."
+      headingAs="h1"
+      allHref={null}
+    />
+  </main>
 </BaseLayout>
+
+<style>
+  /* Room for the navbar above the section header. */
+  .list-page {
+    min-height: 100svh;
+    padding-top: 100px;
+    background: var(--bg);
+  }
+  @media (max-width: 640px) {
+    .list-page {
+      padding-top: 64px;
+    }
+  }
+</style>

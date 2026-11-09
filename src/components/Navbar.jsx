@@ -38,10 +38,11 @@ function CloseIcon() {
 // BaseLayout); `pathname` is re-passed by each page.
 // Desktop: logo left, links + "Say hello" right. Phones (≤ 640px):
 //   [☰]   [logo]   [Say hello]   — ☰ opens a drawer with every link.
-// Desktop links for a personal site. Blog exists; the others are pages still
-// to build. `extra` links hide on small tablets to save room.
+// Desktop links for a personal site. Works and Blog exist; the others are
+// pages still to build. `extra` links hide on small tablets to save room.
 const DESKTOP_LINKS = [
   { label: "About", href: "/about" },
+  { label: "Works", href: "/works" },
   { label: "Blog", href: "/blogs" },
   { label: "Moments", href: "/moments" },
   { label: "Bookshelf", href: "/bookshelf", extra: true },

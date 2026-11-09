@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import Navbar from "../components/Navbar.jsx";
+import Footer from "../components/Footer.astro";
 import { DEFAULT_OG_IMAGE, SITE_URL, absoluteUrl } from "../lib/site";
 import "../styles/tailwind.css";
 import "../styles/base.css";
@@ -30,11 +31,11 @@ const hasOwnImage = Boolean(og.images?.length);
 const ogImages = hasOwnImage
   ? og.images
   : [{ ...DEFAULT_OG_IMAGE, url: absoluteUrl(DEFAULT_OG_IMAGE.url) }];
-// Short crossfade between pages: smooth, without slowing clicks down.
 ---
 
 <!doctype html>
-<html lang="en" transition:animate="none">
+<!-- The public site is light only (the "light" theme tokens in base.css). -->
+<html lang="en" class="light" transition:animate="none">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -104,39 +105,11 @@ const ogImages = hasOwnImage
       ) : null
     }
 
-    <!--
-      Runs before first paint and after every client-side page swap (the swap
-      replaces <html> attributes): applies the light theme on the homepage,
-      project pages and (when chosen) blog posts, so they never flash dark.
-    -->
-    <script is:inline>
-      (function () {
-        if (window.__mtHead) return;
-        window.__mtHead = true;
-        function apply() {
-          var root = document.documentElement;
-          var path = location.pathname;
-          var post = path.replace(/\/+$/, "");
-          // The homepage and single project pages ("/projects/<slug>/") are
-          // always light.
-          var light = post === "" || /^\/projects\/[^/]+$/.test(post);
-          // Blog posts ("/blogs/<slug>", not the "/blogs/" list) follow the
-          // reader's saved choice.
-          var themed = post.indexOf("/blogs/") === 0 && post.length > 7;
-          try {
-            if (themed) light = localStorage.getItem("blog-theme") === "light";
-          } catch (e) {}
-          root.classList.toggle("light", light);
-        }
-        apply();
-        document.addEventListener("astro:after-swap", apply);
-      })();
-    </script>
-
     <ClientRouter />
   </head>
   <body>
     <Navbar client:load pathname={pathname} transition:persist="navbar" />
     <slot />
+    <Footer />
   </body>
 </html>

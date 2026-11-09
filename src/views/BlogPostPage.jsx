@@ -1,4 +1,3 @@
-import BackCircle from "../components/BackCircle";
 import CoverImage, { CoverFallback, placeholderFor } from "../components/CoverImage";
 import { formatPostDate } from "../lib/blog";
 import "./BlogPostPage.css";
@@ -43,8 +42,6 @@ export default function BlogPostPage({ post, previous = null, next = null, child
   return (
     <main className="post-page">
       <div className="post-glow" aria-hidden="true" />
-
-      <BackCircle to="/blogs" label="Back to blogs" />
 
       <article className="post-article">
         <header>

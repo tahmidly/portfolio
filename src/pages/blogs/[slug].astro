@@ -2,7 +2,6 @@
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BlogPostPage from "../../views/BlogPostPage.jsx";
-import BlogThemeToggle from "../../components/BlogThemeToggle.jsx";
 import { getPublishedPosts } from "../../lib/blog";
 import { AUTHOR, SITE_URL, absoluteUrl } from "../../lib/site";
 
@@ -12,14 +11,15 @@ export async function getStaticPaths() {
   const entries = await getCollection("blog", ({ data }) => !data.draft);
   const entryById = new Map(entries.map((entry) => [entry.id, entry]));
 
-  // Posts are newest-first: "previous" = older, "next" = newer.
+  // Follow the reading order of the lists (newest first): "next" is the post
+  // below this one in the list (older), "previous" the one above it (newer).
   return posts.map((post, index) => ({
     params: { slug: post.slug },
     props: {
       post,
       entry: entryById.get(post.id),
-      previous: posts[index + 1] || null,
-      next: posts[index - 1] || null,
+      previous: posts[index - 1] || null,
+      next: posts[index + 1] || null,
     },
   }));
 }
@@ -73,5 +73,4 @@ const og = {
   <BlogPostPage post={post} previous={previous} next={next}>
     <Content />
   </BlogPostPage>
-  <BlogThemeToggle client:load />
 </BaseLayout>

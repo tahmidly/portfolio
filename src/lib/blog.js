@@ -1,7 +1,7 @@
 import { getCollection } from "astro:content";
-import { estimateReadingTime } from "./format";
+import { estimateReadingTime, formatPostDate } from "./format";
 
-export { formatPostDate } from "./format";
+export { formatPostDate };
 
 /** Plain post object in the shape the views expect. */
 function toPost(entry) {
@@ -18,6 +18,26 @@ function toPost(entry) {
     publishedAt: data.date.toISOString(),
     updatedAt: (data.updated || data.date).toISOString(),
     readingTime: data.readingTime || estimateReadingTime(entry.body || ""),
+  };
+}
+
+/**
+ * A post as a row of the RecentWriting list (homepage and /blogs). The
+ * thumbnail is small, so Unsplash covers are requested at 320px.
+ */
+export function toListPost(post) {
+  const cover = post.coverUrl?.includes("images.unsplash.com")
+    ? post.coverUrl.replace(/([?&])w=\d+/, "$1w=320")
+    : post.coverUrl;
+  return {
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt,
+    readingTime: post.readingTime,
+    publishedAt: post.publishedAt,
+    date: formatPostDate(post.publishedAt),
+    cover,
+    coverAlt: post.coverAlt || post.title,
   };
 }
 

@@ -1,12 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import WorksPage from "../views/WorksPage.jsx";
+import WorksIndex from "../components/WorksIndex.jsx";
 import { getPublishedWorks } from "../lib/works";
 
-// Every published project from src/content/works/, newest first.
+// Every published project from src/content/works/, newest first, as a
+// two-column catalogue (name and facts | description and highlights).
 const works = await getPublishedWorks();
 const description =
-  "A selection of projects I've worked on, from concept to launch.";
+  "Every project I've built, newest first — from idea to something people use.";
 ---
 
 <BaseLayout
@@ -15,5 +16,21 @@ const description =
   canonical="/works"
   og={{ title: "Works — Meer Tahmid", description }}
 >
-  <WorksPage works={works} />
+  <main class="list-page">
+    <WorksIndex works={works} />
+  </main>
 </BaseLayout>
+
+<style>
+  /* Room for the navbar above the section header. */
+  .list-page {
+    min-height: 100svh;
+    padding-top: 100px;
+    background: var(--bg);
+  }
+  @media (max-width: 640px) {
+    .list-page {
+      padding-top: 64px;
+    }
+  }
+</style>

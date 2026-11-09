@@ -117,11 +117,11 @@
 
 /* Comfortable reading paragraphs. */
 .project-details p {
-  max-width: 660px;
+  max-width: 680px;
   margin: 0 0 1.5rem;
   font-family: var(--font-text);
-  font-size: 18px;
-  line-height: 32px;
+  font-size: 20px;
+  line-height: 36px;
   color: var(--muted);
 }
 
@@ -227,8 +227,9 @@
   padding: 0;
   list-style: none;
 }
-.project-more li {
-  border-bottom: 1px solid var(--stroke);
+/* Lines between items only (none after the last one). */
+.project-more li + li {
+  border-top: 1px solid var(--stroke);
 }
 .project-more a {
   display: flex;
@@ -269,8 +270,8 @@
     line-height: 30px;
   }
   .project-details p {
-    font-size: 17px;
-    line-height: 30px;
+    font-size: 18px;
+    line-height: 32px;
   }
   .project-details h2,
   .project-stack h2 {

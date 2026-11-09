@@ -1,0 +1,186 @@
+/* ─── /works: two-column project catalogue ─── */
+
+.wi {
+  background: var(--bg);
+  padding: 0 0 7.5rem;
+}
+
+/* Same container as the navbar and homepage. */
+.wi-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+/* ─── Header (same as the homepage section headers) ─── */
+.wi-header {
+  padding-top: 4.5rem;
+  margin-bottom: 2.5rem;
+}
+.wi-label {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.wi-title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--text);
+}
+.wi-sub {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 17px;
+  line-height: 28px;
+  color: var(--muted);
+}
+
+/* ─── Entries: a line under the header, then lines between projects ─── */
+.wi-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--stroke);
+}
+.wi-item {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 4rem;
+  padding: 3rem 0;
+}
+.wi-item + .wi-item {
+  border-top: 1px solid var(--stroke);
+}
+
+/* Left: name, facts, live link. */
+.wi-name {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.wi-name a {
+  color: var(--text);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.wi-name a:hover {
+  opacity: 0.65;
+}
+.wi-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-text);
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--muted);
+}
+.wi-live {
+  font-family: var(--font-text);
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  transition: opacity 0.2s ease;
+}
+.wi-live:hover {
+  opacity: 0.65;
+}
+
+/* Right: lead, bullets, read-more link. */
+.wi-lead {
+  max-width: 620px;
+  margin: 0 0 1.25rem;
+  font-family: var(--font-text);
+  font-size: 19px;
+  line-height: 32px;
+  color: var(--text);
+}
+.wi-points {
+  max-width: 620px;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+.wi-points li {
+  position: relative;
+  margin: 0 0 0.6rem;
+  padding-left: 1rem;
+  font-family: var(--font-text);
+  font-size: 16px;
+  line-height: 26px;
+  color: var(--muted);
+}
+.wi-points li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+}
+.wi-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-text);
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: none;
+}
+.wi-more svg {
+  transition: transform 0.2s ease;
+}
+.wi-more:hover svg {
+  transform: translateX(3px);
+}
+
+/* ─── Phones: stack the two columns ─── */
+@media (max-width: 760px) {
+  .wi-item {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 2.25rem 0;
+  }
+  .wi-facts {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+  }
+  .wi-facts span + span::before {
+    content: "· ";
+  }
+}
+
+@media (max-width: 640px) {
+  .wi {
+    padding: 0 0 5rem;
+  }
+  .wi-inner {
+    padding: 0 1rem;
+  }
+  .wi-header {
+    padding-top: 3rem;
+    margin-bottom: 1.75rem;
+  }
+  .wi-title {
+    font-size: 32px;
+  }
+  .wi-name {
+    font-size: 26px;
+  }
+  .wi-lead {
+    font-size: 17px;
+    line-height: 29px;
+  }
+}
