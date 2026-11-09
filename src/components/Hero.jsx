@@ -38,7 +38,7 @@ const MOMENTS = [
   },
 ];
 // Where the "…" button leads (a full moments page, later).
-const MORE_MOMENTS_URL = "/moments";
+const MORE_MOMENTS_URL = "/photobook";
 
 // Two columns: image on the left, text on the right (stacked on phones).
 export default function Hero() {

@@ -1,0 +1,341 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { moments, logDate } from "../../data/moments";
+
+// One moment on its own: a single loose page from the book, lying on the
+// same wooden table, with the photo large. Opened by clicking a photo in /photobook.
+export function getStaticPaths() {
+  // Moments are newest-first: "previous" = older, "next" = newer.
+  return moments.map((moment, index) => ({
+    params: { slug: moment.slug },
+    props: {
+      moment,
+      index,
+      older: moments[index + 1] || null,
+      newer: moments[index - 1] || null,
+    },
+  }));
+}
+
+const { moment, index, older, newer } = Astro.props;
+
+// A larger copy of the photo for this page (Unsplash images only).
+const photo = moment.image.replace(/([?&])w=\d+/, "$1w=1600");
+const year = new Date(`${moment.date}T12:00:00`).getFullYear();
+
+// Ragged top and bottom edges, the same torn paper as the book.
+function tornEdge(seed) {
+  let t = seed * 9301 + 49297;
+  const rand = () => (t = (t * 9301 + 49297) % 233280) / 233280;
+  const steps = 70;
+  const pts = [];
+  for (let i = 0; i <= steps; i++) pts.push(`${(i / steps) * 100}% ${(rand() * 1).toFixed(2)}%`);
+  for (let i = 1; i < steps; i++) pts.push(`${100 - rand() * 0.9}% ${(i / steps) * 100}%`);
+  for (let i = 0; i <= steps; i++) pts.push(`${100 - (i / steps) * 100}% ${100 - rand() * 1}%`);
+  for (let i = 1; i < steps; i++) pts.push(`${rand() * 0.9}% ${100 - (i / steps) * 100}%`);
+  return `clip-path: polygon(${pts.join(", ")});`;
+}
+
+const TABLE =
+  "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=2000&q=70&auto=format&fit=crop";
+const back = `/photobook#m-${index}`;
+---
+
+<BaseLayout
+  title={`${moment.title} — Photobook`}
+  description={moment.note}
+  canonical={`/photobook/${moment.slug}/`}
+  og={{ title: `${moment.title} — Meer Tahmid`, description: moment.note, image: photo }}
+  bare
+>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"
+  />
+
+  <main class="ms" style={`--table-image: url("${TABLE}")`}>
+    <div class="sheet-shadow">
+      <article class="sheet" style={tornEdge(index + 3)}>
+        <p class="sheet-running">
+          <a href={back} class="sheet-back" data-back>← Back to the photobook</a>
+          <span>In the photobook, {year}.</span>
+        </p>
+
+        <div class="sheet-body">
+          <figure class="sheet-photo">
+            <img src={photo} alt={moment.alt} decoding="async" fetchpriority="high" />
+          </figure>
+
+          <div class="sheet-text">
+            <header class="sheet-head">
+              <span class="sheet-day">{logDate(moment.date)}</span>
+              <span class="sheet-place">{moment.place}</span>
+            </header>
+            <h1 class="sheet-title">{moment.title}</h1>
+            <p class="sheet-note">{moment.note}</p>
+            <p class="sheet-weather">Weather — {moment.weather}</p>
+
+            <nav class="sheet-nav" aria-label="More moments">
+              {newer ? (
+                <a href={`/photobook/${newer.slug}/`} class="sheet-link">
+                  <span>← Newer</span>
+                  {newer.title}
+                </a>
+              ) : <span />}
+              {older ? (
+                <a href={`/photobook/${older.slug}/`} class="sheet-link sheet-link--older">
+                  <span>Older →</span>
+                  {older.title}
+                </a>
+              ) : <span />}
+            </nav>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  // Esc goes back to the book.
+  function onKey(event: KeyboardEvent) {
+    if (event.key !== "Escape") return;
+    const back = document.querySelector<HTMLAnchorElement>("[data-back]");
+    if (back) back.click();
+  }
+  document.addEventListener("astro:page-load", () => {
+    document.removeEventListener("keydown", onKey);
+    if (document.querySelector("[data-back]")) document.addEventListener("keydown", onKey);
+  });
+</script>
+
+<style>
+  /* One screen, no header or footer: a loose page lying on the table. */
+  .ms {
+    --ink: #3b2a1a;
+    --ink-soft: #6e563c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100svh;
+    padding: 1.5rem;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 30%, rgba(15, 8, 3, 0.55) 100%),
+      linear-gradient(rgba(60, 35, 15, 0.15), rgba(60, 35, 15, 0.15)),
+      var(--table-image) center / cover no-repeat,
+      #3a2a1e;
+  }
+  /* The shadow sits on a wrapper (the torn clip-path would cut it off). */
+  .sheet-shadow {
+    width: min(1280px, 100%);
+    height: 100%;
+    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.45));
+  }
+  .sheet {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2rem 2.75rem 2.25rem;
+    color: var(--ink);
+    font-family: "IM Fell English", Georgia, serif;
+    background:
+      radial-gradient(circle at 14% 18%, rgba(150, 100, 45, 0.15) 0, transparent 8%),
+      radial-gradient(circle at 84% 72%, rgba(140, 90, 40, 0.12) 0, transparent 11%),
+      radial-gradient(circle at 70% 10%, rgba(120, 80, 35, 0.1) 0, transparent 6%),
+      radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(120, 75, 30, 0.38) 100%),
+      linear-gradient(170deg, #f1e3c3, #ecdcb8 55%, #e0cba0);
+  }
+  .sheet::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+  }
+
+  .sheet-running {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 3px double rgba(90, 60, 30, 0.4);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .sheet-back {
+    position: relative;
+    z-index: 1;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .sheet-back:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Photo large on the left, the words beside it. */
+  .sheet-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    flex: 1;
+    min-height: 0;
+  }
+  .sheet-photo {
+    position: relative;
+    margin: 0;
+    padding: 9px;
+    min-height: 0;
+    background: #f6ecd4;
+    box-shadow: 0 4px 12px rgba(60, 35, 10, 0.28);
+    transform: rotate(-0.5deg);
+  }
+  .sheet-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(0.6) contrast(0.9) saturate(0.8) brightness(0.98);
+  }
+  .sheet-photo::before,
+  .sheet-photo::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: 26px;
+    height: 26px;
+  }
+  .sheet-photo::before {
+    top: -4px;
+    left: -4px;
+    background: linear-gradient(135deg, #3a2716 50%, transparent 50%);
+  }
+  .sheet-photo::after {
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(315deg, #3a2716 50%, transparent 50%);
+  }
+
+  .sheet-text {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .sheet-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1.5rem;
+  }
+  .sheet-day {
+    font-size: 22px;
+    font-style: italic;
+  }
+  .sheet-place {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .sheet-title {
+    margin: 0 0 0.75rem;
+    font-family: inherit;
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 1.12;
+  }
+  .sheet-note {
+    margin: 0 0 1rem;
+    font-size: 20px;
+    line-height: 1.5;
+  }
+  .sheet-weather {
+    margin: 0;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+
+  /* Newer / older moments at the foot of the words. */
+  .sheet-nav {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(90, 60, 30, 0.3);
+  }
+  .sheet-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .sheet-link span {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .sheet-link--older {
+    text-align: right;
+  }
+  .sheet-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Narrower screens: photo on top, words below, still one screen. */
+  @media (max-width: 860px) {
+    .ms {
+      padding: 0.75rem;
+    }
+    .sheet {
+      padding: 1.5rem 1.4rem 1.4rem;
+    }
+    .sheet-body {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 1.25rem;
+    }
+    .sheet-head {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.75rem;
+    }
+    .sheet-title {
+      font-size: 28px;
+      margin-bottom: 0.4rem;
+    }
+    .sheet-note {
+      font-size: 17px;
+      margin-bottom: 0.5rem;
+    }
+    .sheet-nav {
+      margin-top: 1rem;
+    }
+  }
+  @media (max-width: 640px) {
+    .sheet-running span {
+      display: none;
+    }
+    .sheet-day {
+      font-size: 17px;
+    }
+    .sheet-link {
+      font-size: 15px;
+    }
+  }
+</style>

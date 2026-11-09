@@ -1,0 +1,1031 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { moments, logDate } from "../../data/moments";
+
+// Moments as an old book lying open on a wooden table: two pages per spread,
+// two dated entries per page, each with a small "pasted-in" photograph and a
+// note. Pages turn with a 3D flip (buttons, arrow keys or a swipe).
+// Two entries per page; an even number of pages so every spread is full
+// (an extra closing page is added when needed).
+const pages = [];
+for (let i = 0; i < moments.length; i += 2) pages.push(moments.slice(i, i + 2));
+if (pages.length % 2 === 1) pages.push([]);
+const spreads = pages.length / 2;
+const year = moments[0] ? new Date(`${moments[0].date}T12:00:00`).getFullYear() : "";
+
+// Ragged, torn outer edges for each page (the spine side stays straight).
+// A small seeded random keeps every page different but stable between builds.
+function seeded(seed) {
+  let t = seed * 9301 + 49297;
+  return () => {
+    t = (t * 9301 + 49297) % 233280;
+    return t / 233280;
+  };
+}
+function tornEdge(index) {
+  const rand = seeded(index + 7);
+  const left = index % 2 === 0;
+  const jitterY = () => (rand() * 1.6).toFixed(2); // up to ~9px top/bottom
+  const jitterX = () => (rand() * 1.4).toFixed(2); // up to ~9px at the sides
+  const steps = 60;
+  const pts = [];
+  if (left) {
+    // top: right to left, left edge: top to bottom, bottom: left to right
+    for (let i = 0; i <= steps; i++) pts.push(`${100 - (i / steps) * 100}% ${jitterY()}%`);
+    for (let i = 1; i < steps; i++) pts.push(`${jitterX()}% ${(i / steps) * 100}%`);
+    for (let i = 0; i <= steps; i++) pts.push(`${(i / steps) * 100}% ${100 - jitterY()}%`);
+  } else {
+    // top: left to right (ending in a folded corner), right edge, bottom: right to left
+    for (let i = 0; i < steps; i++) pts.push(`${(i / steps) * 100 * 0.94}% ${jitterY()}%`);
+    pts.push("calc(100% - 34px) 0%", "100% 34px");
+    for (let i = 2; i < steps; i++) pts.push(`${100 - jitterX()}% ${(i / steps) * 100}%`);
+    for (let i = 0; i <= steps; i++) pts.push(`${100 - (i / steps) * 100}% ${100 - jitterY()}%`);
+  }
+  return `clip-path: polygon(${pts.join(", ")});`;
+}
+
+// Weathered wooden planks for the table (free photo from Unsplash).
+const TABLE =
+  "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=2000&q=70&auto=format&fit=crop";
+
+const description = "Small moments and photographs, kept like an old logbook.";
+---
+
+<BaseLayout
+  title="Photobook"
+  description={description}
+  canonical="/photobook"
+  og={{ title: "Photobook — Meer Tahmid", description }}
+  bare
+>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"
+  />
+
+  <main class="mo">
+    <h1 class="sr-only">Photobook — a book of small moments</h1>
+
+    <section class="table" data-table style={`--table-image: url("${TABLE}")`}>
+      <a href="/" class="home-btn" aria-label="Back to the home page">← Home</a>
+      <button type="button" class="full-btn" data-full aria-label="Fullscreen" title="Fullscreen">
+        <svg class="full-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        <svg class="full-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>
+      </button>
+      <div class="book" data-book>
+        <div class="book-stage" data-stage tabindex="0" aria-label="Photobook. Use the arrow keys to turn pages.">
+          {pages.map((entries, index) => (
+            <section
+              class={`page ${index % 2 === 0 ? "page--left" : "page--right"}${index % 4 === 1 || index % 4 === 2 ? " page--alt" : ""}`}
+              style={tornEdge(index)}
+              data-page
+            >
+              <p class="page-running">
+                {index % 2 === 0 ? (
+                  <span>From Bangladesh, onwards.</span>
+                ) : (
+                  <span>In the photobook, {year}.</span>
+                )}
+              </p>
+
+              {entries.length === 0 ? (
+                <p class="page-blank">The rest of this book is still blank.</p>
+              ) : null}
+
+              {entries.map((moment) => (
+                <article class="entry">
+                  <header class="entry-head">
+                    <span class="entry-day">{logDate(moment.date)}</span>
+                    <span class="entry-place">{moment.place}</span>
+                  </header>
+                  <div class="entry-body">
+                    <a class="entry-photo" href={`/photobook/${moment.slug}/`} aria-label={`Open “${moment.title}”`}>
+                      <img src={moment.image} alt={moment.alt} loading="lazy" decoding="async" />
+                    </a>
+                    <div class="entry-text">
+                      <h2 class="entry-title">{moment.title}</h2>
+                      <p class="entry-note">{moment.note}</p>
+                      <p class="entry-weather">Weather — {moment.weather}</p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+
+              <p class="page-number">{index + 1}</p>
+            </section>
+          ))}
+          <p class="page-blank" data-blank hidden>The rest of this book is still blank.</p>
+        </div>
+      </div>
+
+      <nav class="book-nav" aria-label="Turn pages">
+        <button type="button" class="book-btn" data-prev aria-label="Previous page">
+          ← Previous
+        </button>
+        <span class="book-count" data-count aria-live="polite">1 of {spreads}</span>
+        <button type="button" class="book-btn" data-next aria-label="Next page">
+          Next →
+        </button>
+      </nav>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // Page turning with a 3D flip.
+  // Desktop shows a spread (two pages): "next" lifts the right page and turns
+  // it over the spine; "previous" turns the left page back. Phones show one
+  // page and turn it like a single leaf. Buttons, arrow keys and swipes work.
+  const DURATION = 900;
+
+  function initBook() {
+    const book = document.querySelector("[data-book]");
+    if (!book || book.dataset.ready) return;
+    book.dataset.ready = "1";
+
+    const stage = book.querySelector("[data-stage]");
+    let pages = [...stage.querySelectorAll("[data-page]")];
+    const prevBtn = document.querySelector("[data-prev]");
+    const nextBtn = document.querySelector("[data-next]");
+    const count = document.querySelector("[data-count]");
+    const desktopQuery = window.matchMedia("(min-width: 861px)");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    let desktop = desktopQuery.matches;
+    let index = 0; // spread on desktop, page on phones
+    let busy = false;
+
+    const total = () => (desktop ? pages.length / 2 : pages.length);
+    const slots = ["slot-left", "slot-right", "slot-single"];
+
+    // Counter and buttons — updated the moment a turn starts.
+    function updateControls(at) {
+      count.textContent = `${at + 1} of ${total()}`;
+      prevBtn.disabled = at <= 0;
+      nextBtn.disabled = at >= total() - 1;
+    }
+
+    function show() {
+      pages.forEach((page) => page.classList.remove(...slots));
+      if (desktop) {
+        pages[index * 2]?.classList.add("slot-left");
+        pages[index * 2 + 1]?.classList.add("slot-right");
+      } else {
+        pages[index]?.classList.add("slot-single");
+      }
+      updateControls(index);
+    }
+
+    // ─── Fitting moments to the page ───
+    // Each page takes as many moments as fit its height (at most 3; always 1
+    // on phones). Tall screens get 3 per page, short or zoomed-in ones 1.
+    // The server-rendered pages are reused as templates so their styles apply.
+    const MAX_PER_PAGE = 3;
+    const phoneQuery = window.matchMedia("(max-width: 640px)");
+    const entries = [...stage.querySelectorAll(".entry")];
+    const blankTpl = stage.querySelector("[data-blank]");
+    const templates = [pages[0], pages[1]].map((page) => {
+      const tpl = page.cloneNode(true);
+      tpl.querySelectorAll(".entry, .page-blank").forEach((el) => el.remove());
+      tpl.classList.remove(...slots);
+      return tpl;
+    });
+    let entryPage = entries.map((_, i) => Math.floor(i / 2)); // entry → page
+
+    // Ragged edges, as in the server-rendered pages (the spine side stays straight).
+    function tornEdge(i) {
+      let t = (i + 7) * 9301 + 49297;
+      const rand = () => (t = (t * 9301 + 49297) % 233280) / 233280;
+      const jy = () => (rand() * 1.6).toFixed(2);
+      const jx = () => (rand() * 1.4).toFixed(2);
+      const steps = 60;
+      const pts = [];
+      if (i % 2 === 0) {
+        for (let k = 0; k <= steps; k++) pts.push(`${100 - (k / steps) * 100}% ${jy()}%`);
+        for (let k = 1; k < steps; k++) pts.push(`${jx()}% ${(k / steps) * 100}%`);
+        for (let k = 0; k <= steps; k++) pts.push(`${(k / steps) * 100}% ${100 - jy()}%`);
+      } else {
+        for (let k = 0; k < steps; k++) pts.push(`${(k / steps) * 100 * 0.94}% ${jy()}%`);
+        pts.push("calc(100% - 34px) 0%", "100% 34px");
+        for (let k = 2; k < steps; k++) pts.push(`${100 - jx()}% ${(k / steps) * 100}%`);
+        for (let k = 0; k <= steps; k++) pts.push(`${100 - (k / steps) * 100}% ${100 - jy()}%`);
+      }
+      return `polygon(${pts.join(", ")})`;
+    }
+
+    function newPage(i) {
+      const page = templates[i % 2].cloneNode(true);
+      page.className = `page ${i % 2 ? "page--right" : "page--left"}${i % 4 === 1 || i % 4 === 2 ? " page--alt" : ""}`;
+      page.style.clipPath = tornEdge(i);
+      page.querySelector(".page-number").textContent = i + 1;
+      // Measured where it will be shown, so the width is right.
+      page.classList.add(desktop ? "slot-left" : "slot-single");
+      stage.appendChild(page);
+      return page;
+    }
+
+    const overflows = (page) => page.scrollHeight > page.clientHeight + 1;
+
+    function paginate() {
+      const max = phoneQuery.matches ? 1 : MAX_PER_PAGE;
+      pages.forEach((page) => page.remove());
+      pages = [];
+      entryPage = [];
+      let page = null;
+      let onPage = 0;
+      const start = () => {
+        page = newPage(pages.length);
+        pages.push(page);
+        onPage = 0;
+      };
+      start();
+      entries.forEach((entry, i) => {
+        if (onPage >= max) start();
+        const number = page.querySelector(".page-number");
+        page.insertBefore(entry, number);
+        // Didn't fit: move it to a fresh page (a lone moment always stays).
+        if (onPage > 0 && overflows(page)) {
+          start();
+          page.insertBefore(entry, page.querySelector(".page-number"));
+        }
+        onPage++;
+        entryPage[i] = pages.length - 1;
+      });
+      // Spreads need an even number of pages: close with a blank one.
+      if (desktop && pages.length % 2) {
+        start();
+        const blank = blankTpl.cloneNode(true);
+        blank.hidden = false;
+        blank.removeAttribute("data-blank");
+        page.insertBefore(blank, page.querySelector(".page-number"));
+      }
+      pages.forEach((p) => {
+        p.classList.remove(...slots);
+        p.dataset.page = "";
+      });
+    }
+
+    // Re-fit after a resize or zoom, staying on the same moment.
+    function refit() {
+      if (busy) return;
+      const firstPage = desktop ? index * 2 : index;
+      const keep = Math.max(0, entryPage.indexOf(firstPage));
+      desktop = desktopQuery.matches;
+      paginate();
+      const page = entryPage[keep] ?? 0;
+      index = Math.min(desktop ? Math.floor(page / 2) : page, total() - 1);
+      show();
+    }
+
+    // A copy of a page used as one face of the turning leaf.
+    function face(page, back) {
+      const wrap = document.createElement("div");
+      wrap.className = `leaf-face${back ? " leaf-back" : ""}`;
+      if (page) {
+        const copy = page.cloneNode(true);
+        copy.classList.remove(...slots);
+        copy.removeAttribute("data-page");
+        copy.querySelectorAll("img").forEach((img) => (img.loading = "eager"));
+        wrap.appendChild(copy);
+      } else {
+        wrap.classList.add("leaf-plain");
+      }
+      const shade = document.createElement("span");
+      shade.className = "leaf-shade";
+      wrap.appendChild(shade);
+      return wrap;
+    }
+
+    // Build a leaf, run the turn, then clean up.
+    function turn({ side, front, back, from, to, done }) {
+      const leaf = document.createElement("div");
+      leaf.className = `leaf leaf--${side}`;
+      leaf.style.transform = from;
+      leaf.append(face(front, false), face(back, true));
+      stage.appendChild(leaf);
+      // Read layout once so the starting angle is applied, then turn.
+      void leaf.offsetWidth;
+      leaf.classList.add("is-turning");
+      leaf.style.transform = to;
+      const finish = () => {
+        leaf.remove();
+        done();
+        busy = false;
+      };
+      leaf.addEventListener("transitionend", finish, { once: true });
+      setTimeout(() => leaf.isConnected && finish(), DURATION + 200);
+    }
+
+    function go(step) {
+      if (busy) return;
+      const target = index + step;
+      if (target < 0 || target >= total()) return;
+
+      if (reduceMotion.matches) {
+        index = target;
+        show();
+        return;
+      }
+      busy = true;
+      // Show the new page number right away, not after the turn ends.
+      updateControls(target);
+
+      if (desktop) {
+        const L = pages[index * 2];
+        const R = pages[index * 2 + 1];
+        if (step > 0) {
+          const NL = pages[target * 2];
+          const NR = pages[target * 2 + 1];
+          // Under the turning leaf: the next spread's right page.
+          R.classList.remove("slot-right");
+          NR.classList.add("slot-right");
+          turn({
+            side: "right",
+            front: R,
+            back: NL,
+            from: "rotateY(0deg)",
+            to: "rotateY(-180deg)",
+            done: () => {
+              index = target;
+              show();
+            },
+          });
+        } else {
+          const PL = pages[target * 2];
+          const PR = pages[target * 2 + 1];
+          // Under the turning leaf: the previous spread's left page.
+          L.classList.remove("slot-left");
+          PL.classList.add("slot-left");
+          turn({
+            side: "left",
+            front: L,
+            back: PR,
+            from: "rotateY(0deg)",
+            to: "rotateY(180deg)",
+            done: () => {
+              index = target;
+              show();
+            },
+          });
+        }
+      } else {
+        const current = pages[index];
+        const other = pages[target];
+        if (step > 0) {
+          // The current page lifts away to the left, revealing the next one.
+          current.classList.remove("slot-single");
+          other.classList.add("slot-single");
+          turn({
+            side: "single",
+            front: current,
+            back: null,
+            from: "rotateY(0deg)",
+            to: "rotateY(-180deg)",
+            done: () => {
+              index = target;
+              show();
+            },
+          });
+        } else {
+          // The previous page comes back over the current one.
+          turn({
+            side: "single",
+            front: other,
+            back: null,
+            from: "rotateY(-180deg)",
+            to: "rotateY(0deg)",
+            done: () => {
+              index = target;
+              show();
+            },
+          });
+        }
+      }
+    }
+
+    // Fullscreen: the table fills the whole screen, hiding the header and footer.
+    // Uses the browser's real fullscreen where it exists, and a fixed overlay
+    // where it doesn't (e.g. iPhone Safari).
+    const table = document.querySelector("[data-table]");
+    const fullBtn = document.querySelector("[data-full]");
+    function setFull(on) {
+      table.classList.toggle("is-full", on);
+      document.documentElement.classList.toggle("mo-full", on);
+      const label = on ? "Exit fullscreen" : "Fullscreen";
+      fullBtn.setAttribute("aria-label", label);
+      fullBtn.title = label;
+    }
+    fullBtn.addEventListener("click", () => {
+      const on = !table.classList.contains("is-full");
+      if (on) {
+        setFull(true);
+        table.requestFullscreen?.().catch(() => {});
+      } else {
+        setFull(false);
+        if (document.fullscreenElement) document.exitFullscreen?.();
+      }
+      stage.focus({ preventScroll: true });
+    });
+    // Leaving browser fullscreen (Esc) also leaves our fullscreen view.
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement && table.classList.contains("is-full")) setFull(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && table.classList.contains("is-full")) setFull(false);
+    });
+    document.addEventListener("astro:before-swap", () => setFull(false), { once: true });
+
+    prevBtn.addEventListener("click", () => go(-1));
+    nextBtn.addEventListener("click", () => go(1));
+    stage.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") go(1);
+      if (event.key === "ArrowLeft") go(-1);
+    });
+
+    // Swipe left/right to turn.
+    let startX = null;
+    let startY = null;
+    let swiped = false;
+    stage.addEventListener("pointerdown", (event) => {
+      startX = event.clientX;
+      startY = event.clientY;
+    });
+    stage.addEventListener("pointerup", (event) => {
+      if (startX === null) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      startX = null;
+      swiped = Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy);
+      if (swiped) go(dx < 0 ? 1 : -1);
+    });
+    // A swipe that ends on a photo turns the page instead of opening it.
+    stage.addEventListener(
+      "click",
+      (event) => {
+        if (swiped) {
+          event.preventDefault();
+          swiped = false;
+        }
+      },
+      true,
+    );
+
+    // Resizing, zooming, fullscreen or switching between spread and single
+    // page re-fits the moments and keeps your place.
+    let resizeTimer = 0;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(refit, 150);
+    };
+    window.addEventListener("resize", onResize);
+    document.addEventListener("astro:before-swap", () => window.removeEventListener("resize", onResize), {
+      once: true,
+    });
+    // The old-style font changes line heights once it has loaded.
+    document.fonts?.ready.then(refit);
+
+    paginate();
+
+    // Coming back from a single moment (/photobook#m-3) opens the book on its page.
+    const fromHash = /^#m-(\d+)$/.exec(location.hash);
+    if (fromHash) {
+      const page = entryPage[Number(fromHash[1])] ?? 0;
+      index = Math.min(desktop ? Math.floor(page / 2) : page, total() - 1);
+    }
+
+    show();
+  }
+
+  document.addEventListener("astro:page-load", initBook);
+</script>
+
+<style>
+  .mo {
+    /* No header or footer here: the table fills the whole screen. */
+    --nav-h: 0px;
+    --controls-h: 72px;
+    padding-top: var(--nav-h);
+    background: var(--bg);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* ─── The wooden table: fills the screen under the navbar ─── */
+  .table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100svh - var(--nav-h));
+    padding: 2rem 1.5rem 0;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 30%, rgba(15, 8, 3, 0.55) 100%),
+      linear-gradient(rgba(60, 35, 15, 0.15), rgba(60, 35, 15, 0.15)),
+      var(--table-image) center / cover no-repeat,
+      #3a2a1e;
+  }
+
+  /* ─── Fullscreen: the table covers the screen, header and footer hidden ─── */
+  .table {
+    position: relative;
+  }
+  .full-btn {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.25rem;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid rgba(255, 240, 215, 0.35);
+    border-radius: 9999px;
+    background: rgba(245, 235, 215, 0.92);
+    color: #2d2d2d;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  /* Way back to the rest of the site (top left, across from fullscreen). */
+  .home-btn {
+    position: absolute;
+    top: 1.1rem;
+    left: 1.25rem;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    height: 42px;
+    padding: 0 1rem;
+    border: 1px solid rgba(255, 240, 215, 0.35);
+    border-radius: 9999px;
+    background: rgba(245, 235, 215, 0.92);
+    color: #2d2d2d;
+    font-family: var(--font-text);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  .home-btn:hover,
+  .full-btn:hover {
+    background: #fff8ea;
+  }
+  .full-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .full-off,
+  .table.is-full .full-on {
+    display: none;
+  }
+  .table.is-full .full-off {
+    display: block;
+  }
+  .table.is-full {
+    --nav-h: 0px;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    min-height: 100%;
+    padding-top: 1.5rem;
+  }
+  .table.is-full .book {
+    height: calc(100svh - var(--controls-h) - 1.5rem);
+  }
+  :global(html.mo-full) {
+    overflow: hidden;
+  }
+
+  /* ─── The book: blue cloth cover, a stack of old pages ─── */
+  .book {
+    --paper: #ecdcb8;
+    --ink: #3b2a1a;
+    --ink-soft: #6e563c;
+    /* Room on the sides for the fullscreen button. */
+    width: min(1400px, 100% - 128px);
+    height: calc(100svh - var(--nav-h) - var(--controls-h) - 2rem);
+    min-height: 520px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.08), transparent 50%),
+      linear-gradient(135deg, #24476d, #1a3554 55%, #14283f);
+    box-shadow:
+      0 40px 70px rgba(0, 0, 0, 0.55),
+      0 12px 24px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+  /* The stage holds the pages; its stripes are the edges of the page stack. */
+  .book-stage {
+    position: relative;
+    height: 100%;
+    perspective: 2600px;
+    outline: none;
+    touch-action: pan-y;
+    background: repeating-linear-gradient(
+      to right,
+      #d8c39b 0,
+      #d8c39b 2px,
+      #c2a87b 2px,
+      #c2a87b 3px
+    );
+    border-radius: 2px;
+  }
+
+  /* Pages sit slightly inside the stack so its edges show around them. */
+  .page {
+    position: absolute;
+    top: 3px;
+    bottom: 7px;
+    width: calc(50% - 7px);
+    visibility: hidden;
+    overflow: hidden;
+    padding: 2.5rem 3.25rem 3rem;
+    color: var(--ink);
+    font-family: "IM Fell English", Georgia, serif;
+    /* Aged paper: stains and foxing, uneven yellowing, darker burnt edges. */
+    background:
+      radial-gradient(circle at 16% 20%, rgba(150, 100, 45, 0.16) 0, transparent 9%),
+      radial-gradient(circle at 78% 66%, rgba(140, 90, 40, 0.13) 0, transparent 13%),
+      radial-gradient(circle at 62% 12%, rgba(120, 80, 35, 0.1) 0, transparent 6%),
+      radial-gradient(circle at 30% 84%, rgba(150, 100, 45, 0.12) 0, transparent 8%),
+      radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(120, 75, 30, 0.38) 100%),
+      linear-gradient(170deg, #f1e3c3, var(--paper) 55%, #e0cba0);
+  }
+  .page.slot-left {
+    left: 7px;
+    visibility: visible;
+  }
+  .page.slot-right {
+    left: 50%;
+    visibility: visible;
+  }
+  .page.slot-single {
+    left: 5px;
+    right: 5px;
+    width: auto;
+    visibility: visible;
+  }
+  .page::-webkit-scrollbar {
+    display: none;
+  }
+  /* Different stains on alternate pages. */
+  .page--alt {
+    background:
+      radial-gradient(circle at 82% 24%, rgba(150, 100, 45, 0.15) 0, transparent 10%),
+      radial-gradient(circle at 24% 58%, rgba(140, 90, 40, 0.12) 0, transparent 12%),
+      radial-gradient(circle at 70% 88%, rgba(120, 80, 35, 0.12) 0, transparent 7%),
+      radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(120, 75, 30, 0.38) 100%),
+      linear-gradient(190deg, #f0e1bf, var(--paper) 50%, #ddc699);
+  }
+  /* Fine paper grain over everything on the page. */
+  .page::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+  }
+  /* The deep fold at the spine. */
+  .page--left {
+    box-shadow:
+      inset -40px 0 40px -30px rgba(50, 30, 10, 0.55),
+      inset -2px 0 0 rgba(50, 30, 10, 0.25);
+  }
+  .page--right {
+    box-shadow:
+      inset 40px 0 40px -30px rgba(50, 30, 10, 0.55),
+      inset 2px 0 0 rgba(50, 30, 10, 0.25);
+  }
+  /* A folded "dog-ear" corner on the right pages. */
+  .page--right::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(225deg, transparent 50%, #d9c296 50%, #c9ae7d 100%);
+    box-shadow: -2px 2px 4px rgba(60, 35, 10, 0.25);
+  }
+
+  /* Running head, like a printed book, with a thin double rule. */
+  .page-running {
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 3px double rgba(90, 60, 30, 0.4);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .page--right .page-running {
+    text-align: right;
+  }
+  .page-blank {
+    margin: 30% 0 0;
+    font-size: 20px;
+    font-style: italic;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  /* ─── Entries ─── */
+  /* A small printer's ornament between entries. */
+  .entry + .entry::before {
+    content: "❦";
+    display: block;
+    margin: 1.1rem 0 1rem;
+    font-size: 18px;
+    text-align: center;
+    color: rgba(90, 60, 30, 0.55);
+  }
+  .entry-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+  }
+  .entry-day {
+    font-size: 21px;
+    font-style: italic;
+    color: var(--ink);
+  }
+  .entry-place {
+    flex-shrink: 0;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .entry-body {
+    display: grid;
+    grid-template-columns: 38% minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+  /* An old print held by photo-album corners, slightly tilted. */
+  .entry-photo {
+    display: block;
+    cursor: zoom-in;
+    position: relative;
+    margin: 0;
+    padding: 6px;
+    background: #f6ecd4;
+    box-shadow: 0 3px 8px rgba(60, 35, 10, 0.25);
+    transform: rotate(-1.2deg);
+  }
+  .entry:nth-of-type(even) .entry-photo {
+    transform: rotate(1deg);
+  }
+  .entry-photo {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .entry-photo:hover,
+  .entry-photo:focus-visible {
+    transform: rotate(0deg) scale(1.03);
+    box-shadow: 0 8px 18px rgba(60, 35, 10, 0.3);
+  }
+  .entry-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    filter: sepia(0.6) contrast(0.9) saturate(0.8) brightness(0.98);
+  }
+  .entry-photo::before,
+  .entry-photo::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+  }
+  .entry-photo::before {
+    top: -3px;
+    left: -3px;
+    background: linear-gradient(135deg, #3a2716 50%, transparent 50%);
+  }
+  .entry-photo::after {
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(315deg, #3a2716 50%, transparent 50%);
+  }
+  .entry-title {
+    margin: 0 0 0.35rem;
+    font-family: inherit;
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .entry-note {
+    margin: 0 0 0.5rem;
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .entry-weather {
+    margin: 0;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .page-number {
+    position: absolute;
+    bottom: 1.1rem;
+    left: 0;
+    right: 0;
+    margin: 0;
+    font-size: 14px;
+    font-style: italic;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  /* ─── The turning leaf (built by the script, so its styles are global but
+     only inside the book) ─── */
+  .book-stage :global(.leaf) {
+    position: absolute;
+    top: 3px;
+    bottom: 7px;
+    z-index: 5;
+    width: calc(50% - 7px);
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+  .book-stage :global(.leaf.is-turning) {
+    transition: transform 0.9s cubic-bezier(0.45, 0.05, 0.25, 1);
+  }
+  .book-stage :global(.leaf--right) {
+    left: 50%;
+    transform-origin: left center;
+  }
+  .book-stage :global(.leaf--left) {
+    left: 7px;
+    transform-origin: right center;
+  }
+  .book-stage :global(.leaf--single) {
+    left: 5px;
+    right: 5px;
+    width: auto;
+    transform-origin: left center;
+  }
+  .book-stage :global(.leaf-face) {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .book-stage :global(.leaf-back) {
+    transform: rotateY(180deg);
+  }
+  .book-stage :global(.leaf-face .page) {
+    inset: 0;
+    width: 100%;
+    visibility: visible;
+  }
+  .book-stage :global(.leaf-plain) {
+    background: linear-gradient(170deg, #efe0bf, #e2cda3);
+  }
+  /* The page darkens a little as it lifts, then brightens as it lands. */
+  .book-stage :global(.leaf-shade) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(40, 25, 10, 0.35), rgba(40, 25, 10, 0));
+    opacity: 0;
+  }
+  .book-stage :global(.leaf.is-turning .leaf-shade) {
+    animation: leaf-shade 0.9s ease-in-out;
+  }
+  @keyframes leaf-shade {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* ─── Turning buttons (on the table) ─── */
+  .book-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    height: var(--controls-h);
+  }
+  .book-btn {
+    height: 40px;
+    padding: 0 1.1rem;
+    border: 1px solid rgba(255, 240, 215, 0.35);
+    border-radius: 9999px;
+    background: rgba(245, 235, 215, 0.92);
+    color: #2d2d2d;
+    font-family: var(--font-text);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+  .book-btn:hover:not(:disabled) {
+    background: #fff8ea;
+  }
+  .book-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .book-count {
+    min-width: 4.5rem;
+    font-family: var(--font-text);
+    font-size: 14px;
+    text-align: center;
+    color: rgba(255, 245, 225, 0.85);
+  }
+
+  /* ─── Smaller screens: one page at a time ─── */
+  @media (max-width: 860px) {
+    .book-stage {
+      overflow: hidden;
+    }
+    .page {
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .page--left,
+    .page--right {
+      box-shadow: inset 0 0 40px rgba(60, 40, 15, 0.18);
+    }
+    .page--right .page-running {
+      text-align: left;
+    }
+  }
+  @media (max-width: 640px) {
+    .mo {
+      --nav-h: 0px;
+      --controls-h: 64px;
+    }
+    .table {
+      padding: 3rem 0.75rem 0;
+    }
+    .home-btn {
+      top: 0.5rem;
+      left: 0.5rem;
+      height: 36px;
+      padding: 0 0.85rem;
+    }
+    .full-btn {
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 36px;
+      height: 36px;
+    }
+    .table.is-full {
+      padding-top: 3rem;
+    }
+    .table.is-full .book {
+      height: calc(100svh - var(--controls-h) - 3rem);
+    }
+    .book {
+      width: 100%;
+      height: calc(100svh - var(--nav-h) - var(--controls-h) - 3rem);
+      padding: 6px 7px;
+    }
+    .page {
+      padding: 1.75rem 1.4rem 2.75rem;
+    }
+    .entry-body {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+    .entry-day {
+      font-size: 17px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .book-stage :global(.leaf.is-turning) {
+      transition: none;
+    }
+  }
+</style>

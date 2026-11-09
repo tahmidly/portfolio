@@ -44,7 +44,7 @@ const DESKTOP_LINKS = [
   { label: "About", href: "/about" },
   { label: "Works", href: "/works" },
   { label: "Blog", href: "/blogs" },
-  { label: "Moments", href: "/moments" },
+  { label: "Photobook", href: "/photobook" },
   { label: "Bookshelf", href: "/bookshelf", extra: true },
   { label: "Now", href: "/now", extra: true },
 ];

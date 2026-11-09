@@ -19,6 +19,8 @@ const {
   twitter,
   jsonLd,
   rss = false,
+  // bare: no navbar or footer (e.g. a single photo filling the screen).
+  bare = false,
 } = Astro.props;
 
 const fullTitle = title ? `${title} — Meer Tahmid` : DEFAULT_TITLE;
@@ -108,8 +110,8 @@ const ogImages = hasOwnImage
     <ClientRouter />
   </head>
   <body>
-    <Navbar client:load pathname={pathname} transition:persist="navbar" />
+    {!bare && <Navbar client:load pathname={pathname} transition:persist="navbar" />}
     <slot />
-    <Footer />
+    {!bare && <Footer />}
   </body>
 </html>
