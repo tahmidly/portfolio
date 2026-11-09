@@ -46,14 +46,14 @@
 .project-lead {
   margin: 0 0 1.25rem;
   font-family: var(--font-text);
-  font-size: 20px;
-  line-height: 32px;
+  font-size: 21px;
+  line-height: 34px;
   color: var(--text);
 }
 .project-meta {
   margin: 0 0 1rem;
   font-family: var(--font-text);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
 }
 .project-live {
@@ -117,11 +117,11 @@
 
 /* Comfortable reading paragraphs. */
 .project-details p {
-  max-width: 640px;
+  max-width: 660px;
   margin: 0 0 1.5rem;
   font-family: var(--font-text);
-  font-size: 17px;
-  line-height: 30px;
+  font-size: 18px;
+  line-height: 32px;
   color: var(--muted);
 }
 
@@ -142,8 +142,8 @@
   position: relative;
   margin: 0 0 0.75rem;
   font-family: var(--font-text);
-  font-size: 16px;
-  line-height: 26px;
+  font-size: 17px;
+  line-height: 28px;
   color: var(--muted);
 }
 .project-details ul > li {
@@ -265,12 +265,12 @@
     font-size: 36px;
   }
   .project-lead {
-    font-size: 18px;
-    line-height: 29px;
+    font-size: 19px;
+    line-height: 30px;
   }
   .project-details p {
-    font-size: 16px;
-    line-height: 28px;
+    font-size: 17px;
+    line-height: 30px;
   }
   .project-details h2,
   .project-stack h2 {

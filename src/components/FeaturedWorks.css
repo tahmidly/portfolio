@@ -45,8 +45,8 @@
 .fw-sub {
   margin: 0;
   font-family: var(--font-text);
-  font-size: 16px;
-  line-height: 27px;
+  font-size: 17px;
+  line-height: 28px;
   color: var(--muted);
 }
 
@@ -140,8 +140,8 @@
 }
 .fw-desc {
   font-family: var(--font-text);
-  font-size: 15px;
-  line-height: 24px;
+  font-size: 16px;
+  line-height: 26px;
   color: var(--muted);
 }
 

@@ -82,15 +82,15 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 1.1rem;
-  max-width: 460px;
+  max-width: 490px;
   margin-bottom: 3rem;
 }
 .hero-intro-text {
   margin: 0;
   font-family: var(--font-reading);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 400;
-  line-height: 27px;
+  line-height: 29px;
   letter-spacing: 0;
   color: var(--muted);
 }
