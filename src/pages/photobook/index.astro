@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { moments, logDate } from "../../data/moments";
+import { moments, logDateRange } from "../../data/moments";
 
 // Moments as an old book lying open on a wooden table: two pages per spread,
 // two dated entries per page, each with a small "pasted-in" photograph and a
@@ -81,7 +81,7 @@ const description = "Small moments and photographs, kept like an old logbook.";
         <div class="book-stage" data-stage tabindex="0" aria-label="Photobook. Use the arrow keys to turn pages.">
           {pages.map((entries, index) => (
             <section
-              class={`page ${index % 2 === 0 ? "page--left" : "page--right"}${index % 4 === 1 || index % 4 === 2 ? " page--alt" : ""}`}
+              class={`page ${index % 2 === 0 ? "page--left" : "page--right"}${index % 4 === 1 || index % 4 === 2 ? " page--alt" : ""}${entries.length === 1 ? " page--solo" : ""}${entries.length > 1 ? " page--many" : ""}`}
               style={tornEdge(index)}
               data-page
             >
@@ -104,7 +104,7 @@ const description = "Small moments and photographs, kept like an old logbook.";
               {entries.map((moment) => (
                 <article class="entry">
                   <header class="entry-head">
-                    <span class="entry-day">{logDate(moment.date)}</span>
+                    <span class="entry-day">{logDateRange(moment)}</span>
                     <span class="entry-place">{moment.place}</span>
                   </header>
                   <div class="entry-body">
@@ -191,10 +191,10 @@ const description = "Small moments and photographs, kept like an old logbook.";
     }
 
     // ─── Fitting moments to the page ───
-    // Each page takes as many moments as fit its height (at most 3; always 1
-    // on phones). Tall screens get 3 per page, short or zoomed-in ones 1.
+    // Each page takes as many moments as fit its height (always 1 on phones):
+    // zoom out or a tall window and more fit on a page, zoom in and fewer do.
     // The server-rendered pages are reused as templates so their styles apply.
-    const MAX_PER_PAGE = 3;
+    const MAX_PER_PAGE = 4;
     const phoneQuery = window.matchMedia("(max-width: 640px)");
     const entries = [...stage.querySelectorAll(".entry")];
     const blankTpl = stage.querySelector("[data-blank]");
@@ -267,6 +267,20 @@ const description = "Small moments and photographs, kept like an old logbook.";
         onPage++;
         entryPage[i] = pages.length - 1;
       });
+      // The last spread would leave its right page blank: if the last page
+      // holds more than one moment, share them across both pages instead
+      // (each then gets the bigger one-moment layout).
+      if (desktop && pages.length % 2) {
+        const moving = [...pages[pages.length - 1].querySelectorAll(".entry")];
+        if (moving.length > 1) {
+          const toRight = moving.slice(Math.ceil(moving.length / 2));
+          start();
+          toRight.forEach((entry) => {
+            page.insertBefore(entry, page.querySelector(".page-number"));
+            entryPage[entries.indexOf(entry)] = pages.length - 1;
+          });
+        }
+      }
       // Spreads need an even number of pages: close with a blank one.
       if (desktop && pages.length % 2) {
         start();
@@ -278,6 +292,11 @@ const description = "Small moments and photographs, kept like an old logbook.";
       pages.forEach((p) => {
         p.classList.remove(...slots);
         p.dataset.page = "";
+        // A page with just one moment shows it big: photo on top, words below.
+        const count = p.querySelectorAll(".entry").length;
+        p.classList.toggle("page--solo", count === 1);
+        // Two or more: spread them evenly down the page (no empty bottom).
+        p.classList.toggle("page--many", count > 1);
       });
     }
 
@@ -933,6 +952,56 @@ const description = "Small moments and photographs, kept like an old logbook.";
     object-fit: cover;
     filter: sepia(0.6) contrast(0.9) saturate(0.8) brightness(0.98);
   }
+  /* ─── One moment on a page: a big photo on top, the words right under it.
+     The photo is as big as the page allows: when the page is short (zoomed
+     in, small window) it shrinks so the words always fit below it. ─── */
+  .page--solo {
+    display: flex;
+    flex-direction: column;
+  }
+  .page--solo .entry {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .page--solo .entry-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 0;
+  }
+  .page--solo .entry-photo {
+    flex: 0 1 auto;
+    aspect-ratio: 4 / 3;
+    min-height: 90px;
+    transform: rotate(-0.6deg);
+  }
+  .page--solo .entry-photo img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .page--solo .entry-text {
+    flex-shrink: 0;
+  }
+  .page--solo .entry-title {
+    font-size: 27px;
+  }
+
+  /* ─── Two or more moments on a page: spread evenly down the page, so any
+     spare room is shared between them instead of left empty at the bottom. ─── */
+  .page--many {
+    display: flex;
+    flex-direction: column;
+  }
+  .page--many .entry {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   /* "4 photos": a small paper label on photos that have more inside. */
   .entry-count {
     position: absolute;

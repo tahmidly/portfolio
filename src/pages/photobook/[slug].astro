@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { moments, logDate } from "../../data/moments";
+import { moments, logDateRange } from "../../data/moments";
 
 // One moment on its own: a single loose page from the book, lying on the
 // same wooden table, with the photo large. Opened by clicking a photo in /photobook.
@@ -76,6 +76,7 @@ const back = `/photobook#m-${index}`;
         </p>
 
         <div class="sheet-body">
+          <div class="sheet-media">
           <figure class="sheet-photo" data-slider aria-roledescription="carousel" aria-label={`Photos from ${moment.title}`}>
             <div class="slides-window">
               <div class="slides" data-slides>
@@ -105,15 +106,6 @@ const back = `/photobook#m-${index}`;
             )}
           </figure>
 
-          <div class="sheet-text">
-            <header class="sheet-head">
-              <span class="sheet-day">{logDate(moment.date)}</span>
-              <span class="sheet-place">{moment.place}</span>
-            </header>
-            <h1 class="sheet-title">{moment.title}</h1>
-            <p class="sheet-note">{moment.note}</p>
-            <p class="sheet-weather">Weather — {moment.weather}</p>
-
             {photos.length > 1 && (
               <div class="sheet-more">
                 <p class="sheet-more-label">More from this day</p>
@@ -133,6 +125,21 @@ const back = `/photobook#m-${index}`;
                 </ul>
               </div>
             )}
+          </div>
+
+          <div class="sheet-text">
+            <header class="sheet-head">
+              <span class="sheet-day">{logDateRange(moment)}</span>
+              <span class="sheet-place">{moment.place}</span>
+            </header>
+            <h1 class="sheet-title">{moment.title}</h1>
+            <p class="sheet-note">{moment.note}</p>
+            {moment.story?.length > 0 && (
+              <div class="sheet-story">
+                {moment.story.map((paragraph) => <p>{paragraph}</p>)}
+              </div>
+            )}
+            <p class="sheet-weather">Weather — {moment.weather}</p>
 
             <nav class="sheet-nav" aria-label="More moments">
               {newer ? (
@@ -360,8 +367,19 @@ const back = `/photobook#m-${index}`;
     flex: 1;
     min-height: 0;
   }
+  /* Wide photo on top, "More from this day" right under it. */
+  .sheet-media {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 0;
+  }
   .sheet-photo {
     position: relative;
+    flex: 0 1 auto;
+    width: 100%;
+    aspect-ratio: 4 / 3; /* the shape of my phone photos (4080×3072) */
+    max-height: 100%;
     margin: 0;
     padding: 9px;
     min-height: 0;
@@ -390,7 +408,7 @@ const back = `/photobook#m-${index}`;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: sepia(0.6) contrast(0.9) saturate(0.8) brightness(0.98);
+    /* Real colours on this page (the book keeps its sepia look). */
     /* Each photo gets its own layer: the sepia is worked out once, then the
        photo is only moved, never repainted, while sliding. */
     transform: translateZ(0);
@@ -456,9 +474,9 @@ const back = `/photobook#m-${index}`;
     box-shadow: 0 2px 6px rgba(40, 25, 10, 0.2);
   }
 
-  /* ─── "More from this day": thumbnails beside the words (desktop) ─── */
+  /* ─── "More from this day": small prints under the photo ─── */
   .sheet-more {
-    margin-top: 1.75rem;
+    flex-shrink: 0;
   }
   .sheet-more-label {
     margin: 0 0 0.75rem;
@@ -468,8 +486,8 @@ const back = `/photobook#m-${index}`;
   }
   .thumbs {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.6rem;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -490,9 +508,8 @@ const back = `/photobook#m-${index}`;
   .thumb img {
     display: block;
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
-    filter: sepia(0.6) contrast(0.9) saturate(0.8);
   }
   .thumb:hover {
     opacity: 1;
@@ -550,9 +567,26 @@ const back = `/photobook#m-${index}`;
     line-height: 1.12;
   }
   .sheet-note {
-    margin: 0 0 1rem;
+    margin: 0 0 1.25rem;
     font-size: 20px;
-    line-height: 1.5;
+    line-height: 1.7;
+  }
+  /* The longer story: easy-to-read lines with room between paragraphs. If it
+     is longer than the page, it scrolls on its own (the page itself stays put). */
+  .sheet-story {
+    min-height: 0;
+    margin: 0 0 1.25rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .sheet-story p {
+    margin: 0 0 1rem;
+    font-size: 18px;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+  .sheet-story p:last-child {
+    margin-bottom: 0;
   }
   .sheet-weather {
     margin: 0;
@@ -602,16 +636,35 @@ const back = `/photobook#m-${index}`;
       width: min(1280px, 100%);
     }
   }
-  /* Short screens: the thumbnails would not fit beside the words. */
+  /* Short screens: no room for the thumbnails under the photo. */
   @media (max-height: 700px) {
     .sheet-more {
       display: none;
     }
   }
   @media (max-width: 860px) {
-    /* Phones swipe through the photos; no thumbnails needed. */
-    .sheet-more {
-      display: none;
+    /* Same as desktop: the wide photo, then the small photos under it. */
+    /* Phones: the page grows with the story and scrolls like a normal page,
+       so the whole story can be read (instead of a tiny scrolling box). */
+    .ms {
+      align-items: flex-start;
+      height: auto;
+      min-height: 100svh;
+      overflow: visible;
+    }
+    .sheet-shadow,
+    .sheet {
+      height: auto;
+    }
+    .sheet-body {
+      flex: none;
+    }
+    .sheet-story {
+      overflow: visible;
+    }
+    .thumbs {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.6rem;
     }
     .slide-btn {
       width: 36px;
@@ -640,7 +693,8 @@ const back = `/photobook#m-${index}`;
     }
     .sheet-body {
       grid-template-columns: 1fr;
-      grid-template-rows: minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      align-content: start;
       gap: 1.25rem;
     }
     .sheet-head {
