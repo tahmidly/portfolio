@@ -1,14 +1,12 @@
 /* ─── Hero: image left, text right ─── */
 
-/* Starts a fixed 80px below the navbar (100px tall) instead of centring in
-   the window, so the gap is the same on every screen. It is at least one
-   screen tall, so the next section starts just below the fold instead of
-   peeking in half-visible. */
+/* Starts a fixed 80px below the navbar (100px tall), so the gap is the same
+   on every screen. Only as tall as its content, so the next section shows
+   just below it. */
 .hero {
   display: flex;
   align-items: flex-start;
-  min-height: 100svh;
-  padding: calc(100px + 80px) 0 4rem;
+  padding: calc(100px + 80px) 0 3rem;
   background: var(--bg);
 }
 
@@ -238,6 +236,33 @@
 }
 
 /* ─── Tablets and phones: stack the image above the text ─── */
+/* Desktop: the text column is exactly as tall as the photo, so the headline
+   starts level with the top of the photo and the Moments strip ends level
+   with its bottom. (If the text is ever taller, the photo grows to match.) */
+@media (min-width: 861px) {
+  .hero-grid {
+    align-items: stretch;
+  }
+  .hero-content {
+    justify-content: flex-start;
+  }
+  /* Headline type has a little built-in space above the letters; this
+     lifts it so the tops of the letters meet the top of the photo. */
+  .hero-title {
+    margin-top: -0.12em;
+  }
+  .hero-intro {
+    margin-bottom: 2rem;
+  }
+  /* The Moments strip sits at the bottom of the column. */
+  .hero-dock-label {
+    margin-top: auto;
+  }
+  .hero-dock {
+    margin-bottom: 0;
+  }
+}
+
 @media (max-width: 860px) {
   .hero-grid {
     grid-template-columns: 1fr;
