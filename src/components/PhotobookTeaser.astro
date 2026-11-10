@@ -145,9 +145,14 @@ const shortDate = (iso: string) =>
     height: 100%;
     object-fit: cover;
     filter: grayscale(1) contrast(0.85);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.4s ease;
   }
-  .pb-card:hover .pb-photo img {
+  /* Hover (or keyboard focus): the photo comes back to colour. */
+  .pb-card:hover .pb-photo img,
+  .pb-card:focus-visible .pb-photo img {
+    filter: grayscale(0) contrast(1);
     transform: scale(1.04);
   }
   .pb-name {

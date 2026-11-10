@@ -102,6 +102,9 @@ const description = "Small moments and photographs, kept like an old logbook.";
                   <div class="entry-body">
                     <a class="entry-photo" href={`/photobook/${moment.slug}/`} aria-label={`Open “${moment.title}”`}>
                       <img src={moment.image} alt={moment.alt} loading="lazy" decoding="async" draggable="false" />
+                      {moment.images.length > 1 && (
+                        <span class="entry-count">{moment.images.length} photos</span>
+                      )}
                     </a>
                     <div class="entry-text">
                       <h2 class="entry-title">{moment.title}</h2>
@@ -919,6 +922,20 @@ const description = "Small moments and photographs, kept like an old logbook.";
     aspect-ratio: 4 / 3;
     object-fit: cover;
     filter: sepia(0.6) contrast(0.9) saturate(0.8) brightness(0.98);
+  }
+  /* "4 photos": a small paper label on photos that have more inside. */
+  .entry-count {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 2;
+    padding: 0.1rem 0.45rem;
+    background: rgba(246, 236, 212, 0.92);
+    border-radius: 2px;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--ink);
+    box-shadow: 0 1px 4px rgba(40, 25, 10, 0.25);
   }
   .entry-photo::before,
   .entry-photo::after {

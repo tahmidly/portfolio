@@ -19,8 +19,14 @@ export function getStaticPaths() {
 
 const { moment, index, older, newer } = Astro.props;
 
-// A larger copy of the photo for this page (Unsplash images only).
-const photo = moment.image.replace(/([?&])w=\d+/, "$1w=1600");
+// Larger copies for the slider, small ones for the thumbnails (Unsplash only).
+const sized = (src, w) => src.replace(/([?&])w=\d+/, `$1w=${w}`);
+const photos = moment.images.map((img) => ({
+  ...img,
+  large: sized(img.src, 1600),
+  thumb: sized(img.src, 300),
+}));
+const photo = photos[0].large;
 const year = new Date(`${moment.date}T12:00:00`).getFullYear();
 
 // Ragged top and bottom edges, the same torn paper as the book.
@@ -64,8 +70,33 @@ const back = `/photobook#m-${index}`;
         </p>
 
         <div class="sheet-body">
-          <figure class="sheet-photo">
-            <img src={photo} alt={moment.alt} decoding="async" fetchpriority="high" draggable="false" />
+          <figure class="sheet-photo" data-slider aria-roledescription="carousel" aria-label={`Photos from ${moment.title}`}>
+            <div class="slides-window">
+              <div class="slides" data-slides>
+                {photos.map((img, i) => (
+                  <img
+                    src={img.large}
+                    alt={img.alt}
+                    decoding="async"
+                    loading={i < 2 ? "eager" : "lazy"}
+                    fetchpriority={i === 0 ? "high" : "auto"}
+                    draggable="false"
+                    aria-hidden={i === 0 ? "false" : "true"}
+                  />
+                ))}
+              </div>
+            </div>
+            {photos.length > 1 && (
+              <>
+                <button type="button" class="slide-btn slide-btn--prev" data-slide-prev aria-label="Previous photo">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+                </button>
+                <button type="button" class="slide-btn slide-btn--next" data-slide-next aria-label="Next photo">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                </button>
+                <p class="slide-count" data-slide-count aria-live="polite">1 / {photos.length}</p>
+              </>
+            )}
           </figure>
 
           <div class="sheet-text">
@@ -76,6 +107,26 @@ const back = `/photobook#m-${index}`;
             <h1 class="sheet-title">{moment.title}</h1>
             <p class="sheet-note">{moment.note}</p>
             <p class="sheet-weather">Weather — {moment.weather}</p>
+
+            {photos.length > 1 && (
+              <div class="sheet-more">
+                <p class="sheet-more-label">More from this day</p>
+                <ul class="thumbs">
+                  {photos.map((img, i) => (
+                    <li>
+                      <button
+                        type="button"
+                        class={`thumb${i === 0 ? " is-active" : ""}`}
+                        data-thumb={i}
+                        aria-label={`Show photo ${i + 1}: ${img.alt}`}
+                      >
+                        <img src={img.thumb} alt="" loading="lazy" decoding="async" draggable="false" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <nav class="sheet-nav" aria-label="More moments">
               {newer ? (
@@ -99,43 +150,96 @@ const back = `/photobook#m-${index}`;
 </BaseLayout>
 
 <script>
-  // Keys: Esc goes back to the photobook; ← newer moment, → older one.
-  // Phones: swipe left for the older moment, right for the newer one.
-  const follow = (selector: string) =>
-    document.querySelector<HTMLAnchorElement>(selector)?.click();
+  // The photo slider: ‹ › buttons, the thumbnails, ← / → keys, and a drag or
+  // swipe that follows your finger. Swiping only changes the photo, never the
+  // moment (Newer / Older below go to other moments). Esc goes back to the
+  // photobook.
+  function initSlider() {
+    const slider = document.querySelector<HTMLElement>("[data-slider]");
+    if (!slider || slider.dataset.ready) return;
+    slider.dataset.ready = "1";
 
-  function onKey(event: KeyboardEvent) {
-    if (event.altKey || event.ctrlKey || event.metaKey) return;
-    if (event.key === "Escape") follow("[data-back]");
-    if (event.key === "ArrowLeft") follow("[data-newer]");
-    if (event.key === "ArrowRight") follow("[data-older]");
-  }
+    const track = slider.querySelector<HTMLElement>("[data-slides]")!;
+    const images = [...track.querySelectorAll("img")];
+    const count = slider.querySelector("[data-slide-count]");
+    const prevBtn = slider.querySelector<HTMLButtonElement>("[data-slide-prev]");
+    const nextBtn = slider.querySelector<HTMLButtonElement>("[data-slide-next]");
+    const thumbs = [...document.querySelectorAll<HTMLButtonElement>("[data-thumb]")];
+    const total = images.length;
+    let current = 0;
 
-  let touch: { x: number; y: number } | null = null;
-  function onTouchStart(event: TouchEvent) {
-    const t = event.touches[0];
-    touch = event.touches.length === 1 ? { x: t.clientX, y: t.clientY } : null;
-  }
-  function onTouchEnd(event: TouchEvent) {
-    if (!touch) return;
-    const t = event.changedTouches[0];
-    const dx = t.clientX - touch.x;
-    const dy = t.clientY - touch.y;
-    touch = null;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      follow(dx < 0 ? "[data-older]" : "[data-newer]");
+    function show(i: number, animate = true) {
+      current = Math.max(0, Math.min(total - 1, i));
+      track.style.transition = animate ? "" : "none";
+      track.style.transform = `translateX(${-current * 100}%)`;
+      images.forEach((img, k) => {
+        img.setAttribute("aria-hidden", String(k !== current));
+        if (Math.abs(k - current) <= 1) img.loading = "eager"; // load neighbours early
+      });
+      if (count) count.textContent = `${current + 1} / ${total}`;
+      if (prevBtn) prevBtn.disabled = current === 0;
+      if (nextBtn) nextBtn.disabled = current === total - 1;
+      thumbs.forEach((t, k) => t.classList.toggle("is-active", k === current));
     }
+
+    prevBtn?.addEventListener("click", () => show(current - 1));
+    nextBtn?.addEventListener("click", () => show(current + 1));
+    thumbs.forEach((t) => t.addEventListener("click", () => show(Number(t.dataset.thumb))));
+
+    function onKey(event: KeyboardEvent) {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "Escape") document.querySelector<HTMLAnchorElement>("[data-back]")?.click();
+      if (event.key === "ArrowLeft") show(current - 1);
+      if (event.key === "ArrowRight") show(current + 1);
+    }
+    document.addEventListener("keydown", onKey);
+    document.addEventListener(
+      "astro:before-swap",
+      () => document.removeEventListener("keydown", onKey),
+      { once: true },
+    );
+
+    // Drag / swipe: the photo follows the pointer, then settles on the
+    // nearest photo (a quick flick is enough).
+    if (total > 1) {
+      let drag: { x: number; y: number; t: number; axis: "x" | "y" | null } | null = null;
+      let dx = 0;
+      slider.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
+        drag = { x: event.clientX, y: event.clientY, t: performance.now(), axis: null };
+        dx = 0;
+      });
+      slider.addEventListener("pointermove", (event) => {
+        if (!drag) return;
+        const mx = event.clientX - drag.x;
+        const my = event.clientY - drag.y;
+        if (!drag.axis && Math.hypot(mx, my) > 6) {
+          drag.axis = Math.abs(mx) > Math.abs(my) ? "x" : "y";
+          if (drag.axis === "x") slider.setPointerCapture(event.pointerId);
+        }
+        if (drag.axis !== "x") return;
+        // A little resistance past the first and last photo.
+        const atEdge = (current === 0 && mx > 0) || (current === total - 1 && mx < 0);
+        dx = atEdge ? mx / 3 : mx;
+        track.style.transition = "none";
+        track.style.transform = `translateX(calc(${-current * 100}% + ${dx}px))`;
+      });
+      const end = () => {
+        if (!drag) return;
+        const wasX = drag.axis === "x";
+        const quick = performance.now() - drag.t < 250 && Math.abs(dx) > 20;
+        const far = Math.abs(dx) > slider.clientWidth * 0.2;
+        drag = null;
+        if (wasX) show(quick || far ? current + (dx < 0 ? 1 : -1) : current);
+      };
+      slider.addEventListener("pointerup", end);
+      slider.addEventListener("pointercancel", end);
+    }
+
+    show(0, false);
   }
 
-  document.addEventListener("astro:page-load", () => {
-    document.removeEventListener("keydown", onKey);
-    document.removeEventListener("touchstart", onTouchStart);
-    document.removeEventListener("touchend", onTouchEnd);
-    if (!document.querySelector(".ms")) return;
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("touchstart", onTouchStart, { passive: true });
-    document.addEventListener("touchend", onTouchEnd, { passive: true });
-  });
+  document.addEventListener("astro:page-load", initSlider);
 </script>
 
 <style>
@@ -180,12 +284,22 @@ const back = `/photobook#m-${index}`;
     background: #fff8ea;
   }
 
-  /* The shadow sits on a wrapper (the torn clip-path would cut it off). */
+  /* The page's shadow is a plain blurred box behind it, drawn once. (A
+     drop-shadow filter around the torn page would be redrawn on every frame
+     while a photo slides, which made the slider lag.) */
   .sheet-shadow {
+    position: relative;
+    isolation: isolate;
     /* Room on the sides for the back button. */
     width: min(1280px, 100% - 300px);
     height: 100%;
-    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.45));
+  }
+  .sheet-shadow::before {
+    content: "";
+    position: absolute;
+    inset: 14px 10px 4px;
+    z-index: -1;
+    box-shadow: 0 26px 44px rgba(0, 0, 0, 0.5);
   }
   .sheet {
     position: relative;
@@ -211,6 +325,13 @@ const back = `/photobook#m-${index}`;
     background-size: 200px 200px;
     opacity: 0.22;
     mix-blend-mode: multiply;
+    z-index: 0;
+  }
+  /* Everything on the page sits above the grain; the photo then slides
+     without the grain being blended over it on every frame. */
+  .sheet > * {
+    position: relative;
+    z-index: 1;
   }
 
   .sheet-running {
@@ -242,12 +363,138 @@ const back = `/photobook#m-${index}`;
     box-shadow: 0 4px 12px rgba(60, 35, 10, 0.28);
     transform: rotate(-0.5deg);
   }
-  .sheet-photo img {
+  /* ─── Photo slider: the photos sit side by side and slide ─── */
+  .sheet-photo {
+    touch-action: pan-y; /* sideways drags belong to the slider */
+  }
+  .slides-window {
+    height: 100%;
+    overflow: hidden;
+    contain: paint;
+  }
+  .slides {
+    display: flex;
+    height: 100%;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+  .slides img {
     display: block;
+    flex: 0 0 100%;
     width: 100%;
     height: 100%;
     object-fit: cover;
     filter: sepia(0.6) contrast(0.9) saturate(0.8) brightness(0.98);
+    /* Each photo gets its own layer: the sepia is worked out once, then the
+       photo is only moved, never repainted, while sliding. */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  /* Round paper buttons on the photo's edges. */
+  .slide-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid rgba(90, 60, 30, 0.25);
+    border-radius: 9999px;
+    background: rgba(246, 236, 212, 0.92);
+    color: var(--ink);
+    cursor: pointer;
+    transform: translateY(-50%);
+    box-shadow: 0 3px 10px rgba(40, 25, 10, 0.25);
+    transition:
+      background-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+  .slide-btn--prev {
+    left: 20px;
+  }
+  .slide-btn--next {
+    right: 20px;
+  }
+  .slide-btn:hover:not(:disabled) {
+    background: #fff8ea;
+  }
+  .slide-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .slide-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* "2 / 4" on a small paper label at the bottom of the photo. */
+  .slide-count {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    z-index: 2;
+    margin: 0;
+    padding: 0.2rem 0.75rem;
+    background: rgba(246, 236, 212, 0.92);
+    border-radius: 2px;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink);
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(40, 25, 10, 0.2);
+  }
+
+  /* ─── "More from this day": thumbnails beside the words (desktop) ─── */
+  .sheet-more {
+    margin-top: 1.75rem;
+  }
+  .sheet-more-label {
+    margin: 0 0 0.75rem;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .thumb {
+    display: block;
+    width: 100%;
+    padding: 3px;
+    border: 0;
+    background: #f6ecd4;
+    box-shadow: 0 2px 5px rgba(60, 35, 10, 0.22);
+    cursor: pointer;
+    opacity: 0.7;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+  .thumb img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    filter: sepia(0.6) contrast(0.9) saturate(0.8);
+  }
+  .thumb:hover {
+    opacity: 1;
+  }
+  .thumb.is-active {
+    opacity: 1;
+    outline: 1.5px solid var(--ink);
+    outline-offset: 2px;
   }
   .sheet-photo::before,
   .sheet-photo::after {
@@ -349,7 +596,30 @@ const back = `/photobook#m-${index}`;
       width: min(1280px, 100%);
     }
   }
+  /* Short screens: the thumbnails would not fit beside the words. */
+  @media (max-height: 700px) {
+    .sheet-more {
+      display: none;
+    }
+  }
   @media (max-width: 860px) {
+    /* Phones swipe through the photos; no thumbnails needed. */
+    .sheet-more {
+      display: none;
+    }
+    .slide-btn {
+      width: 36px;
+      height: 36px;
+    }
+    .slide-btn--prev {
+      left: 10px;
+    }
+    .slide-btn--next {
+      right: 10px;
+    }
+    .slide-count {
+      bottom: 12px;
+    }
     .ms {
       padding: 3.5rem 0.75rem 0.75rem;
     }
