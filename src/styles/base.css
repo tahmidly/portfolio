@@ -89,6 +89,47 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* ─── Scrollbars: thin, rounded and in the site's colours ─── */
+:root {
+  /* The site's dark text colour (#2d2d2d), a touch softer until hovered. */
+  --scrollbar-thumb: rgba(45, 45, 45, 0.78);
+  --scrollbar-thumb-hover: #2d2d2d;
+}
+/* Chrome, Edge, Safari: a slim pill on a clear track. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+/* Firefox: its own thin scrollbar in the same colours. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+/* The photobook pages sit on a dark wooden table: a light paper-coloured
+   thumb there, and no reserved scrollbar gap (it showed as a light strip
+   down the right edge). */
+html:has(main.mo, main.ms) {
+  --scrollbar-thumb: rgba(246, 236, 212, 0.4);
+  --scrollbar-thumb-hover: rgba(246, 236, 212, 0.65);
+  scrollbar-gutter: auto;
+  background: #2b1d12;
+}
+
 body {
   background: var(--bg);
   color: var(--text);

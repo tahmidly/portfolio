@@ -133,12 +133,17 @@ const back = `/photobook#m-${index}`;
               <span class="sheet-place">{moment.place}</span>
             </header>
             <h1 class="sheet-title">{moment.title}</h1>
-            <p class="sheet-note">{moment.note}</p>
-            {moment.story?.length > 0 && (
-              <div class="sheet-story">
-                {moment.story.map((paragraph) => <p>{paragraph}</p>)}
-              </div>
-            )}
+            <div class="sheet-words" data-words>
+              <p class="sheet-note">{moment.note}</p>
+              {moment.story?.length > 0 && (
+                <div class="sheet-story">
+                  {moment.story.map((paragraph) => <p>{paragraph}</p>)}
+                </div>
+              )}
+            </div>
+            <button type="button" class="read-more" data-read-more hidden>
+              Read more <span aria-hidden="true">→</span>
+            </button>
             <p class="sheet-weather">Weather — {moment.weather}</p>
 
             <nav class="sheet-nav" aria-label="More moments">
@@ -159,6 +164,22 @@ const back = `/photobook#m-${index}`;
         </div>
       </article>
     </div>
+
+    <dialog class="story-dialog" data-story-dialog aria-labelledby="story-title">
+      <div class="story-paper">
+        <button type="button" class="story-close" data-story-close aria-label="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+        <p class="story-meta">
+          <span>{logDateRange(moment)}</span>
+          <span>{moment.place}</span>
+        </p>
+        <h2 class="story-title" id="story-title">{moment.title}</h2>
+        <p class="story-note">{moment.note}</p>
+        {moment.story?.map((paragraph) => <p class="story-text">{paragraph}</p>)}
+        <p class="story-weather">Weather — {moment.weather}</p>
+      </div>
+    </dialog>
   </main>
 </BaseLayout>
 
@@ -199,8 +220,35 @@ const back = `/photobook#m-${index}`;
     nextBtn?.addEventListener("click", () => show(current + 1));
     thumbs.forEach((t) => t.addEventListener("click", () => show(Number(t.dataset.thumb))));
 
+    // "Read more": the words beside the photo show as much as fits (fading
+    // out at the bottom). If anything is cut off, a button opens all of it.
+    const words = document.querySelector<HTMLElement>("[data-words]");
+    const readMore = document.querySelector<HTMLButtonElement>("[data-read-more]");
+    const dialog = document.querySelector<HTMLDialogElement>("[data-story-dialog]");
+    function checkWords() {
+      if (!words || !readMore) return;
+      const clipped = words.scrollHeight > words.clientHeight + 2;
+      words.classList.toggle("is-clipped", clipped);
+      readMore.hidden = !clipped;
+    }
+    checkWords();
+    document.fonts?.ready.then(checkWords);
+    window.addEventListener("resize", checkWords);
+    document.addEventListener(
+      "astro:before-swap",
+      () => window.removeEventListener("resize", checkWords),
+      { once: true },
+    );
+    readMore?.addEventListener("click", () => dialog?.showModal());
+    dialog?.querySelector("[data-story-close]")?.addEventListener("click", () => dialog.close());
+    // A click on the dark area around the paper closes it too.
+    dialog?.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+
     function onKey(event: KeyboardEvent) {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (dialog?.open) return; // Esc closes the pop-up (built in), nothing else
       if (event.key === "Escape") document.querySelector<HTMLAnchorElement>("[data-back]")?.click();
       if (event.key === "ArrowLeft") show(current - 1);
       if (event.key === "ArrowRight") show(current + 1);
@@ -571,13 +619,147 @@ const back = `/photobook#m-${index}`;
     font-size: 20px;
     line-height: 1.7;
   }
-  /* The longer story: easy-to-read lines with room between paragraphs. If it
-     is longer than the page, it scrolls on its own (the page itself stays put). */
-  .sheet-story {
+  /* The note and story beside the photo: they take the room that is left and
+     fade out at the bottom when there's more than fits ("Read more" below). */
+  .sheet-words {
+    flex: 0 1 auto;
     min-height: 0;
     margin: 0 0 1.25rem;
+    overflow: hidden;
+  }
+  .sheet-words.is-clipped {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent);
+  }
+  .sheet-words .sheet-note:last-child {
+    margin-bottom: 0;
+  }
+  .sheet-story {
+    margin: 0;
+  }
+  .read-more {
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin: -0.25rem 0 1.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 17px;
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  .read-more:hover {
+    text-decoration-thickness: 2px;
+  }
+  .read-more[hidden] {
+    display: none;
+  }
+
+  /* ─── The story pop-up: a loose sheet of the same old paper ─── */
+  .story-dialog {
+    /* Centred on the screen (a CSS reset elsewhere sets margin: 0). */
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    height: fit-content;
+    width: min(640px, calc(100% - 2rem));
+    max-height: min(86svh, 900px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: "IM Fell English", Georgia, serif;
+    overflow: visible;
+  }
+  .story-dialog::backdrop {
+    background: rgba(20, 12, 5, 0.62);
+    backdrop-filter: blur(2px);
+  }
+  .story-dialog[open] {
+    animation: story-in 0.25s ease-out;
+  }
+  @keyframes story-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  .story-paper {
+    position: relative;
+    max-height: min(86svh, 900px);
     overflow-y: auto;
-    scrollbar-width: thin;
+    padding: 2.5rem 2.75rem 2.25rem;
+    border-radius: 3px;
+    background:
+      radial-gradient(circle at 14% 18%, rgba(150, 100, 45, 0.15) 0, transparent 8%),
+      radial-gradient(circle at 84% 72%, rgba(140, 90, 40, 0.12) 0, transparent 11%),
+      radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(120, 75, 30, 0.3) 100%),
+      linear-gradient(170deg, #f1e3c3, #ecdcb8 55%, #e0cba0);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  }
+  .story-close {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid rgba(90, 60, 30, 0.25);
+    border-radius: 9999px;
+    background: rgba(246, 236, 212, 0.9);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .story-close svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .story-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0 3rem 0.75rem 0;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .story-meta span + span {
+    font-style: normal;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .story-title {
+    margin: 0 0 1rem;
+    font-family: inherit;
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 1.15;
+  }
+  .story-note,
+  .story-text {
+    margin: 0 0 1.1rem;
+    font-size: 19px;
+    line-height: 1.75;
+  }
+  .story-weather {
+    margin: 1.5rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(90, 60, 30, 0.3);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
   }
   .sheet-story p {
     margin: 0 0 1rem;
@@ -659,8 +841,14 @@ const back = `/photobook#m-${index}`;
     .sheet-body {
       flex: none;
     }
-    .sheet-story {
+    .sheet-words {
       overflow: visible;
+    }
+    .story-paper {
+      padding: 2rem 1.4rem 1.6rem;
+    }
+    .story-title {
+      font-size: 28px;
     }
     .thumbs {
       grid-template-columns: repeat(4, minmax(0, 1fr));
