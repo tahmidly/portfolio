@@ -17,8 +17,10 @@ export default defineConfig({
   // deploys to any static host (Netlify: see netlify.toml).
   // localStudio: /admin writing studio, only during `astro dev` (saves .md files).
   integrations: [react(), localStudio()],
-  // <ClientRouter /> turns on prefetchAll; hover is the default strategy.
-  prefetch: { prefetchAll: true, defaultStrategy: "hover" },
+  // <ClientRouter /> turns on prefetchAll. "viewport": every link on screen
+  // (the navbar included) is fetched in the background once the page is idle,
+  // so a click (or a tap on phones, which have no hover) opens it instantly.
+  prefetch: { prefetchAll: true, defaultStrategy: "viewport" },
   // Keep whitespace between inline elements exactly as written.
   compressHTML: true,
   vite: {
