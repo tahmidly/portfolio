@@ -1,31 +1,46 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { socialLinks } from "../data/portfolio";
 
 // ─── Edit these to make the page yours ───
-// The opening line under the title.
-const LEAD = "Hi, I'm Meer. I'm from Bangladesh, and this is a little about me.";
-// My story, one paragraph per item. Short and simple, in my own words.
+// Where I work now and before (linked in the opening paragraph, same as the homepage).
+const WORK_NOW = { name: "Ideeza", url: "https://www.ideeza.com/" };
+const WORK_BEFORE = { name: "Visiontillion", url: "https://www.visiontillion.com/en" };
+// My story, one paragraph per item, in my own words. Write a link as
+// [text](https://…) and it becomes a link on the page.
 const STORY = [
-  "I grew up in Bangladesh. Rainy afternoons, strong tea and long talks with family and friends shaped who I am.",
-  "I'm a slow-morning person. I like to start the day quietly, with a cup of tea and nowhere to rush to.",
-  "I love walking around new places with no plan. I notice small things most people walk past — the light on a wet road, the smell of rain, steam rising from a cup of tea. I take a lot of photos of those little moments.",
-  "I like old books, the kind you want to read twice. And I still think rain on a tin roof is the best sound there is.",
-  "I made this site as my own little corner. It's where I keep my stories, my thoughts and the moments I don't want to forget.",
+  "I'm from Bangladesh.",
+  "My first computer was my father's laptop. It was 2018, and I spent hours just figuring out how everything worked.",
+  "Around that time, I watched my brother, [Meer Estiyak](https://mmestiyak.com/), building things on the web, and I wanted to do the same. In 2020, when I was ten, I started learning HTML on that same laptop.",
+  "It wasn't easy. There was no Wi-Fi in our area, so getting online at all was a struggle. My brother was usually away from home for his work and studies, so most of the time I was on my own, figuring things out by myself.",
+  "For a while, I drifted toward design. I learned Photoshop and Illustrator and spent my time playing with shapes, colors and layouts. I didn't know it then, but that taught me how things should look and feel, something I still use every day.",
+  "In 2021, I came back to programming, this time for real. My brother guided me along the way, pointing me in the right direction whenever I got stuck, and seeing his work kept me inspired. From 2021 to 2025, I kept learning, building and breaking things.",
+  "In 2025, I joined [Visiontillion](https://www.visiontillion.com/en), a 3D marketplace, where I spent eight months building the platform's foundation from scratch. It was my first real job, and the first time my code was used by real people.",
+  "Now, in 2026, I'm at [Ideeza](https://www.ideeza.com/), working on browser-based CAD tools, 2D and 3D editors and a PCB board builder, that help people turn hardware ideas into real prototypes without writing code.",
+  "Alongside my work, I've built things with my brother, [Meer Estiyak](https://mmestiyak.com/). Together we made [Kommercly](/projects/kommercly/), a mobile-first store builder that lets Bangladeshi merchants set up an online shop and take orders through WhatsApp, and [KhamarVest](/projects/khamarvest/), a farm dashboard that keeps track of cattle, feed and supplies, and the money going in and out, all in one place.",
+  "Outside of work, you'll usually find me gaming, out cycling, or walking around taking photos with my phone. I love exploring new places with no plan and noticing small things most people walk past: the light on a wet road, the smell of rain, the quiet moments in between. I capture a lot of those little moments.",
+  "And when I have some free time, I design things for no reason at all. Customizing, tweaking, making something look just right. It's not for work or for anyone else, it just gives me a kind of peace.",
+  "Above all, I'm a Muslim, and I'm always trying to become a better one, in my work, in how I treat people, and in everyday life.",
+  "I made this site as my own little corner, a place for my work, my stories, and the small things I notice along the way.",
 ];
+// Splits a paragraph into plain text and [text](url) links.
+const parts = (paragraph) =>
+  paragraph.split(/(\[[^\]]+\]\([^)]+\))/).map((piece) => {
+    const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(piece);
+    return link ? { text: link[1], url: link[2] } : { text: piece };
+  });
 // A few things I love, shown with quiet "·" bullets.
+// (Taken from my story above.)
 const LOVES = [
-  "Slow mornings and strong tea",
-  "Walking new streets with no plan",
-  "Taking photos of small moments",
-  "Old books worth reading twice",
-  "Rain on a tin roof",
+  "Gaming",
+  "Cycling",
+  "Taking photos with my phone",
+  "Exploring new places with no plan",
+  "Noticing the small things most people walk past",
+  "Designing things just for fun",
 ];
 const EMAIL = "redfoxtahmid@gmail.com";
-const order = ["GitHub", "LinkedIn", "Instagram", "Facebook"];
-const socials = [...socialLinks].sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label));
 
-const description = "A little about Meer Tahmid, in my own words.";
+const description = "Meer Tahmid — a software engineer from Bangladesh, in my own words.";
 ---
 
 <BaseLayout
@@ -37,22 +52,45 @@ const description = "A little about Meer Tahmid, in my own words.";
   <main class="about">
     <div class="about-inner">
       <header class="about-header">
-        <p class="about-label">About</p>
-        <h1 class="about-title">A little about me.</h1>
-        <p class="about-lead">{LEAD}</p>
-      </header>
+        <div class="about-intro">
+          <p class="about-label">About</p>
+          <h1 class="about-title">Hello, I&rsquo;m<br />Meer Tahmid.</h1>
+          <p class="about-lead">
+            I&rsquo;m a software engineer from Bangladesh. At{" "}
+            <a href={WORK_NOW.url} target="_blank" rel="noopener noreferrer">{WORK_NOW.name}</a>, I
+            work on browser-based CAD software, including 2D and 3D editors and a PCB board builder,
+            that helps people turn hardware ideas into real prototypes without writing code. Before
+            that, I was at{" "}
+            <a href={WORK_BEFORE.url} target="_blank" rel="noopener noreferrer">{WORK_BEFORE.name}</a>,
+            a 3D marketplace, where I built the platform&rsquo;s foundation from the ground up.
+          </p>
+        </div>
 
-      <div class="about-grid">
         <!-- Portrait: matte black and white, like the homepage. -->
         <figure class="about-photo">
           <img src="/me.png" alt="Portrait of Meer Tahmid" width="1088" height="1445" />
           <figcaption>Meer Tahmid · Bangladesh</figcaption>
         </figure>
+      </header>
 
+      <div class="about-grid">
         <div class="about-body">
           <section class="about-section">
-            <h2 class="about-section-label">My story</h2>
-            {STORY.map((paragraph) => <p class="about-text">{paragraph}</p>)}
+            {STORY.map((paragraph) => (
+              <p class="about-text">
+                {parts(paragraph).map((part) =>
+                  part.url ? (
+                    <a
+                      class="about-link"
+                      href={part.url}
+                      {...(part.url.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    >{part.text}</a>
+                  ) : (
+                    part.text
+                  ),
+                )}
+              </p>
+            ))}
           </section>
 
           <section class="about-section">
@@ -81,15 +119,6 @@ const description = "A little about Meer Tahmid, in my own words.";
             <div class="about-actions">
               <a class="about-btn about-btn--primary" href={`mailto:${EMAIL}`}>Say hello</a>
             </div>
-            <ul class="about-socials">
-              {socials.map((link) => (
-                <li>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer">
-                    {link.label} <span aria-hidden="true">↗</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
           </section>
         </div>
       </div>
@@ -111,9 +140,16 @@ const description = "A little about Meer Tahmid, in my own words.";
   }
 
   /* ─── Header ─── */
+  /* Intro on the left, portrait on the right. */
   .about-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+    gap: 4rem;
+    align-items: end;
+    padding-bottom: 3.5rem;
+  }
+  .about-intro {
     max-width: 720px;
-    padding-bottom: 3rem;
   }
   .about-label {
     margin: 0 0 0.9rem;
@@ -135,23 +171,33 @@ const description = "A little about Meer Tahmid, in my own words.";
   .about-lead {
     margin: 0;
     font-family: var(--font-text);
-    font-size: 21px;
-    line-height: 34px;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh); /* same as the story below */
     color: var(--text);
   }
 
-  /* ─── Portrait left (stays in view), words right ─── */
+  /* Workplace names: darker, with a thin underline (as on the homepage). */
+  .about-lead a {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, var(--text) 35%, transparent);
+    text-underline-offset: 5px;
+    transition: text-decoration-color 0.2s ease;
+  }
+  .about-lead a:hover {
+    text-decoration-color: var(--text);
+  }
+
+  /* ─── The story: one calm reading column under the line ─── */
   .about-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
-    gap: 4.5rem;
-    align-items: start;
-    padding-top: 3rem;
+    padding-top: 3.5rem;
     border-top: 1px solid var(--stroke);
   }
+  .about-body {
+    max-width: 720px;
+  }
   .about-photo {
-    position: sticky;
-    top: 130px;
     margin: 0;
   }
   .about-photo img {
@@ -187,10 +233,10 @@ const description = "A little about Meer Tahmid, in my own words.";
     color: var(--muted);
   }
   .about-text {
-    margin: 0 0 1.25rem;
+    margin: 0 0 var(--text-gap);
     font-family: var(--font-text);
-    font-size: 20px;
-    line-height: 34px;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
     color: var(--text);
   }
   .about-text:last-child {
@@ -213,8 +259,8 @@ const description = "A little about Meer Tahmid, in my own words.";
     position: relative;
     padding-left: 1.1rem;
     font-family: var(--font-text);
-    font-size: 17px;
-    line-height: 28px;
+    font-size: var(--text-small);
+    line-height: var(--text-small-lh);
     color: var(--text);
   }
   .about-list li + li {
@@ -227,7 +273,7 @@ const description = "A little about Meer Tahmid, in my own words.";
     color: var(--muted);
   }
 
-  /* Say hello: buttons like the hero, socials in a row. */
+  /* Say hello: a button like the hero (social links are in the footer). */
   .about-actions {
     display: flex;
     flex-wrap: wrap;
@@ -261,38 +307,16 @@ const description = "A little about Meer Tahmid, in my own words.";
   .about-btn--primary:hover {
     opacity: 0.85;
   }
-  .about-socials {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem 1.75rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .about-socials a {
-    font-family: var(--font-text);
-    font-size: 15px;
-    color: var(--text);
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-  }
-  .about-socials a:hover {
-    opacity: 0.6;
-  }
-  .about-socials span {
-    font-size: 13px;
-    color: var(--muted);
-  }
 
-  /* ─── Smaller screens: photo on top, then the words ─── */
+  /* ─── Smaller screens: photo first, then the intro ─── */
   @media (max-width: 860px) {
-    .about-grid {
+    .about-header {
       grid-template-columns: 1fr;
-      gap: 2.5rem;
+      gap: 2.25rem;
     }
     .about-photo {
-      position: static;
-      max-width: 320px;
+      order: -1;
+      max-width: 260px;
     }
   }
   @media (max-width: 640px) {
@@ -304,14 +328,6 @@ const description = "A little about Meer Tahmid, in my own words.";
     }
     .about-title {
       font-size: 40px;
-    }
-    .about-lead {
-      font-size: 18px;
-      line-height: 30px;
-    }
-    .about-text {
-      font-size: 18px;
-      line-height: 30px;
     }
   }
 </style>

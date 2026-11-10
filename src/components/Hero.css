@@ -81,18 +81,31 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1.1rem;
+  gap: 1.75rem; /* 28px between the intro and the buttons */
   max-width: 490px;
   margin-bottom: 3rem;
 }
 .hero-intro-text {
   margin: 0;
   font-family: var(--font-reading);
-  font-size: 17px;
+  /* The "small" step of the text scale (17px), so it sits calmly beside the photo. */
+  font-size: var(--text-small);
   font-weight: 400;
-  line-height: 29px;
+  line-height: var(--text-small-lh);
   letter-spacing: 0;
   color: var(--muted);
+}
+/* Workplace names: darker than the paragraph, with a thin underline. */
+.hero-intro-text a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--text) 35%, transparent);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+}
+.hero-intro-text a:hover {
+  text-decoration-color: var(--text);
 }
 /* Resume (dark) + Read my story (outlined). */
 .hero-actions {
@@ -277,10 +290,6 @@
     align-items: flex-start;
     gap: 1.25rem;
     margin-bottom: 2.25rem;
-  }
-  .hero-intro-text {
-    font-size: 16px;
-    line-height: 26px;
   }
   /* 44px tall: an easy tap target. */
   .hero-btn {

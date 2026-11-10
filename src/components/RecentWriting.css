@@ -41,8 +41,8 @@
 .rw-sub {
   margin: 0;
   font-family: var(--font-text);
-  font-size: 17px;
-  line-height: 28px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   color: var(--muted);
 }
 
@@ -128,7 +128,8 @@
 .rw-date,
 .rw-time {
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: var(--text-meta);
+  line-height: var(--text-meta-lh);
   white-space: nowrap;
   color: var(--muted);
 }
@@ -163,8 +164,8 @@
   overflow: hidden;
   max-width: 620px;
   font-family: var(--font-text);
-  font-size: 16px;
-  line-height: 26px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   color: var(--muted);
 }
 
@@ -237,10 +238,6 @@
     flex-direction: row;
     align-items: baseline;
     gap: 0.35rem;
-  }
-  .rw-date,
-  .rw-time {
-    font-size: 13px;
   }
   .rw-time::before {
     content: "· ";

@@ -16,13 +16,18 @@ const featuredWorks = await getFeaturedWorks();
 const posts = await getPublishedPosts();
 const recentPosts = posts.slice(0, 3).map(toListPost);
 
+// What Google shows under the site name in search results (the same words
+// as the homepage intro).
+const description =
+  "I'm a software engineer from Bangladesh. At Ideeza, I work on browser-based CAD software, including 2D and 3D editors and a PCB board builder, that helps people turn hardware ideas into real prototypes without writing code. Before that, I was at Visiontillion, a 3D marketplace, where I built the platform's foundation from the ground up.";
+
 // Structured data so Google knows who the site belongs to (name, links).
 const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: AUTHOR,
-    url: SITE_URL,
+    url: `${SITE_URL}/`,
   },
   {
     "@context": "https://schema.org",
@@ -30,13 +35,16 @@ const jsonLd = [
     name: AUTHOR,
     url: SITE_URL,
     image: absoluteUrl("/logo-mark.png"),
-    jobTitle: "Frontend Developer",
+    jobTitle: "Software Engineer",
+    worksFor: { "@type": "Organization", name: "Ideeza", url: "https://www.ideeza.com/" },
+    homeLocation: { "@type": "Country", name: "Bangladesh" },
+    description,
     sameAs: socialLinks.map((link) => link.url),
   },
 ];
 ---
 
-<BaseLayout canonical="/" jsonLd={jsonLd}>
+<BaseLayout canonical="/" description={description} jsonLd={jsonLd}>
   <main>
     <Hero />
     <FeaturedWorks works={featuredWorks} />

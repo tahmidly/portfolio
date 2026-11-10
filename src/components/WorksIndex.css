@@ -37,8 +37,8 @@
 .wi-sub {
   margin: 0;
   font-family: var(--font-text);
-  font-size: 17px;
-  line-height: 28px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   color: var(--muted);
 }
 
@@ -82,13 +82,14 @@
   gap: 0.2rem;
   margin: 0 0 1rem;
   font-family: var(--font-text);
-  font-size: 15px;
-  line-height: 24px;
+  font-size: var(--text-meta);
+  line-height: var(--text-meta-lh);
   color: var(--muted);
 }
 .wi-live {
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: var(--text-meta);
+  line-height: var(--text-meta-lh);
   color: var(--text);
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -104,8 +105,8 @@
   max-width: 620px;
   margin: 0 0 1.25rem;
   font-family: var(--font-text);
-  font-size: 19px;
-  line-height: 32px;
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
   color: var(--text);
 }
 .wi-points {
@@ -119,8 +120,8 @@
   margin: 0 0 0.6rem;
   padding-left: 1rem;
   font-family: var(--font-text);
-  font-size: 16px;
-  line-height: 26px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   color: var(--muted);
 }
 .wi-points li::before {
@@ -133,7 +134,8 @@
   align-items: center;
   gap: 0.45rem;
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: var(--text-meta);
+  line-height: var(--text-meta-lh);
   color: var(--text);
   text-decoration: none;
 }
@@ -178,9 +180,5 @@
   }
   .wi-name {
     font-size: 26px;
-  }
-  .wi-lead {
-    font-size: 17px;
-    line-height: 29px;
   }
 }

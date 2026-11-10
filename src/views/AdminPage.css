@@ -737,7 +737,7 @@
   margin-top: 0;
 }
 .admin-tiptap p {
-  margin: 0 0 1.6rem;
+  margin: 0 0 1.75rem; /* matches the published post */
 }
 .admin-tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);

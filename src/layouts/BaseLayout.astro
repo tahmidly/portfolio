@@ -2,13 +2,14 @@
 import { ClientRouter } from "astro:transitions";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.astro";
-import { DEFAULT_OG_IMAGE, SITE_URL, absoluteUrl } from "../lib/site";
+import { DEFAULT_OG_IMAGE, SITE_URL, absoluteUrl, pageUrl } from "../lib/site";
 import "../styles/tailwind.css";
 import "../styles/base.css";
 
 const DEFAULT_TITLE = "Meer Tahmid";
+// Used in search results and link previews when a page has no description.
 const DEFAULT_DESCRIPTION =
-  "Frontend developer crafting responsive web applications with modern React and JavaScript technologies.";
+  "The personal space of Meer Tahmid, a software engineer from Bangladesh: my work, my stories and the small moments I notice along the way.";
 
 const {
   title,
@@ -24,14 +25,20 @@ const {
 } = Astro.props;
 
 const fullTitle = title ? `${title} — Meer Tahmid` : DEFAULT_TITLE;
-const canonicalUrl = canonical ? absoluteUrl(canonical) : undefined;
+const canonicalUrl = canonical ? pageUrl(canonical) : undefined;
 const pathname = Astro.url.pathname;
 const ogTitle = og.title ?? title ?? DEFAULT_TITLE;
 const ogDescription = og.description ?? description;
 // Pages without their own image (home, works, blogs) share the logo mark.
-const hasOwnImage = Boolean(og.images?.length);
-const ogImages = hasOwnImage
+// A page can pass og.images (a list) or og.image (one URL).
+const ownImages = og.images?.length
   ? og.images
+  : og.image
+    ? [{ url: absoluteUrl(og.image), alt: og.imageAlt }]
+    : [];
+const hasOwnImage = ownImages.length > 0;
+const ogImages = hasOwnImage
+  ? ownImages
   : [{ ...DEFAULT_OG_IMAGE, url: absoluteUrl(DEFAULT_OG_IMAGE.url) }];
 ---
 

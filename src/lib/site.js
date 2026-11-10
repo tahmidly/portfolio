@@ -11,6 +11,16 @@ export const DEFAULT_OG_IMAGE = {
   alt: "Meer Tahmid logo",
 };
 
+/**
+ * Full address of a page, always ending in "/" (e.g. https://meer.men/about/),
+ * so Google sees one address per page. Files like /rss.xml are left as is.
+ */
+export function pageUrl(path = "/") {
+  const url = absoluteUrl(path);
+  if (/\.[a-z0-9]+$/i.test(url) || url.endsWith("/")) return url;
+  return `${url}/`;
+}
+
 export function absoluteUrl(path = "/") {
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE_URL}${path.startsWith("/") ? "" : "/"}${path}`;

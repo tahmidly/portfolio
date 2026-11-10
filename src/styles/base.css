@@ -32,6 +32,33 @@
   /* Page container: 1080px wide with 32px side padding (1016px of content). */
   --container: 1080px;
   --container-pad: 32px;
+
+  /* Text scale — every paragraph on the site uses one of these three, so
+     sizes and line spacing stay the same everywhere:
+     body  — paragraphs you read (stories, posts, project details, intros)
+     small — supporting text (section subtitles, excerpts, short lists)
+     meta  — dates, tags, captions and other small details */
+  --text-body: 20px;
+  --text-body-lh: 36px;
+  --text-small: 17px;
+  --text-small-lh: 30px;
+  --text-meta: 15px;
+  --text-meta-lh: 24px;
+  /* Space between paragraphs. */
+  --text-gap: 28px;
+}
+
+/* Phones: the same scale, one step smaller. */
+@media (max-width: 640px) {
+  :root {
+    --text-body: 18px;
+    --text-body-lh: 32px;
+    --text-small: 16px;
+    --text-small-lh: 28px;
+    --text-meta: 14px;
+    --text-meta-lh: 22px;
+    --text-gap: 24px;
+  }
 }
 
 /* Light theme: #2d2d2d for headings and main text, #555 for paragraphs,

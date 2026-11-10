@@ -8,6 +8,7 @@ const shortDate = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 ---
 
+{latest.length > 0 && (
 <section class="pb" id="photobook">
   <div class="pb-inner">
     <header class="pb-header">
@@ -42,6 +43,7 @@ const shortDate = (iso: string) =>
     </ul>
   </div>
 </section>
+)}
 
 <style>
   /* Sits after Recent writing, so no extra space on top. */
@@ -85,8 +87,8 @@ const shortDate = (iso: string) =>
   .pb-sub {
     margin: 0;
     font-family: var(--font-text);
-    font-size: 17px;
-    line-height: 28px;
+    font-size: var(--text-small);
+    line-height: var(--text-small-lh);
     color: var(--muted);
   }
   .pb-btn {
@@ -165,7 +167,8 @@ const shortDate = (iso: string) =>
   .pb-meta {
     margin-top: 0.25rem;
     font-family: var(--font-text);
-    font-size: 14px;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
     color: var(--muted);
   }
 

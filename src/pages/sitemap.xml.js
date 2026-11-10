@@ -1,31 +1,33 @@
 import { getPublishedPosts } from "../lib/blog";
-import { SITE_URL } from "../lib/site";
+import { getPublishedWorks } from "../lib/works";
+import { moments } from "../data/moments";
+import { pageUrl } from "../lib/site";
 
-const entry = ({ url, lastModified, changeFrequency, priority }) => `  <url>
-    <loc>${url}</loc>
-    <lastmod>${lastModified.toISOString()}</lastmod>
-    <changefreq>${changeFrequency}</changefreq>
-    <priority>${priority}</priority>
+// Every public page, so Google can find them all: the main pages, each
+// project, each blog post and each Photobook moment. Addresses end in "/"
+// to match the canonical links. (Google ignores changefreq/priority, so only
+// the address and the last-changed date are listed.)
+const entry = ({ path, lastModified }) => `  <url>
+    <loc>${pageUrl(path)}</loc>${
+      lastModified ? `\n    <lastmod>${new Date(lastModified).toISOString()}</lastmod>` : ""
+    }
   </url>`;
 
 export const GET = async () => {
-  const posts = await getPublishedPosts();
-  const newestUpdate = new Date(
-    posts.reduce(
-      (max, post) => Math.max(max, new Date(post.updatedAt).getTime()),
-      posts[0]?.updatedAt ? new Date(posts[0].updatedAt).getTime() : Date.now(),
-    ),
-  );
+  const [posts, works] = await Promise.all([getPublishedPosts(), getPublishedWorks()]);
+  const newestPost = posts[0]?.updatedAt;
 
   const urls = [
-    { url: SITE_URL, lastModified: newestUpdate, changeFrequency: "monthly", priority: 1 },
-    { url: `${SITE_URL}/works`, lastModified: newestUpdate, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/blogs`, lastModified: newestUpdate, changeFrequency: "weekly", priority: 0.8 },
-    ...posts.map((post) => ({
-      url: `${SITE_URL}/blogs/${post.slug}`,
-      lastModified: new Date(post.updatedAt),
-      changeFrequency: "monthly",
-      priority: 0.7,
+    { path: "/" },
+    { path: "/about" },
+    { path: "/works", lastModified: works[0]?.date },
+    { path: "/blogs", lastModified: newestPost },
+    { path: "/photobook", lastModified: moments[0] && `${moments[0].date}T12:00:00Z` },
+    ...works.map((work) => ({ path: `/projects/${work.slug}`, lastModified: work.date })),
+    ...posts.map((post) => ({ path: `/blogs/${post.slug}`, lastModified: post.updatedAt })),
+    ...moments.map((moment) => ({
+      path: `/photobook/${moment.slug}`,
+      lastModified: `${moment.date}T12:00:00Z`,
     })),
   ];
 

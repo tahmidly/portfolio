@@ -49,7 +49,8 @@
   gap: 0.6rem;
   /* Same as the project page meta line. */
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: var(--text-meta);
+  line-height: var(--text-meta-lh);
   color: var(--muted);
 }
 .post-dot {
@@ -80,12 +81,12 @@
 }
 .post-content p {
   font-family: var(--font-reading);
-  font-size: 20px;
-  line-height: 36px;
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
   letter-spacing: 0.18px;
   font-weight: 400;
   color: var(--text);
-  margin-bottom: 1.6rem;
+  margin-bottom: var(--text-gap);
   text-wrap: pretty;
 }
 .post-content h2 {
@@ -108,10 +109,6 @@
   .post-cover {
     aspect-ratio: 4 / 3;
   }
-  .post-content p {
-    font-size: 18px;
-    line-height: 32px;
-  }
 }
 
 /* ─── Markdown post body (fonts/colors stay fixed) ─── */
@@ -126,8 +123,8 @@
 .post-content ul,
 .post-content ol {
   font-family: var(--font-reading);
-  font-size: 18px;
-  line-height: 32px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   letter-spacing: 0.18px;
   color: var(--text);
   margin: 0 0 1.6rem;

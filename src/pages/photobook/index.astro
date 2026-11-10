@@ -10,8 +10,12 @@ import { moments, logDate } from "../../data/moments";
 const pages = [];
 for (let i = 0; i < moments.length; i += 2) pages.push(moments.slice(i, i + 2));
 if (pages.length % 2 === 1) pages.push([]);
+// No moments yet: the book still lies open, on two empty pages.
+if (pages.length === 0) pages.push([], []);
 const spreads = pages.length / 2;
-const year = moments[0] ? new Date(`${moments[0].date}T12:00:00`).getFullYear() : "";
+const year = moments[0]
+  ? new Date(`${moments[0].date}T12:00:00`).getFullYear()
+  : new Date().getFullYear();
 
 // Ragged, torn outer edges for each page (the spine side stays straight).
 // A small seeded random keeps every page different but stable between builds.
@@ -90,7 +94,11 @@ const description = "Small moments and photographs, kept like an old logbook.";
               </p>
 
               {entries.length === 0 ? (
-                <p class="page-blank">The rest of this book is still blank.</p>
+                <p class="page-blank">
+                  {moments.length === 0 && index === 0
+                    ? "Nothing here yet. The first moments are on the way."
+                    : "The rest of this book is still blank."}
+                </p>
               ) : null}
 
               {entries.map((moment) => (
@@ -233,6 +241,8 @@ const description = "Small moments and photographs, kept like an old logbook.";
     const overflows = (page) => page.scrollHeight > page.clientHeight + 1;
 
     function paginate() {
+      // No moments yet: keep the two empty pages as they are.
+      if (!entries.length) return;
       const max = phoneQuery.matches ? 1 : MAX_PER_PAGE;
       pages.forEach((page) => page.remove());
       pages = [];

@@ -51,7 +51,13 @@ const back = `/photobook#m-${index}`;
   title={`${moment.title} — Photobook`}
   description={moment.note}
   canonical={`/photobook/${moment.slug}/`}
-  og={{ title: `${moment.title} — Meer Tahmid`, description: moment.note, image: photo }}
+  og={{
+    title: `${moment.title} — Meer Tahmid`,
+    description: moment.note,
+    type: "article",
+    image: photos[0].large,
+    imageAlt: photos[0].alt,
+  }}
   bare
 >
   <link rel="preconnect" href="https://fonts.googleapis.com" />

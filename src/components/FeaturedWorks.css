@@ -43,8 +43,8 @@
 .fw-sub {
   margin: 0;
   font-family: var(--font-text);
-  font-size: 17px;
-  line-height: 28px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   color: var(--muted);
 }
 
@@ -107,7 +107,8 @@
 .fw-year,
 .fw-tag {
   font-family: var(--font-text);
-  font-size: 15px;
+  font-size: var(--text-meta);
+  line-height: var(--text-meta-lh);
   color: var(--muted);
 }
 /* A long category is cut to one line with "…". */
@@ -156,8 +157,8 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-family: var(--font-text);
-  font-size: 16px;
-  line-height: 26px;
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
   color: var(--muted);
 }
 
