@@ -24,6 +24,19 @@ export default defineConfig({
   // Keep whitespace between inline elements exactly as written.
   compressHTML: true,
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      // Velox's own website is plain HTML in public/velox/. The live host
+      // serves it at /velox/; this makes `astro dev` do the same.
+      {
+        name: "velox-dev-index",
+        configureServer(server) {
+          server.middlewares.use((req, _res, next) => {
+            if (req.url === "/velox" || req.url === "/velox/") req.url = "/velox/index.html";
+            next();
+          });
+        },
+      },
+    ],
   },
 });

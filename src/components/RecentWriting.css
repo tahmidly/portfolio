@@ -253,11 +253,3 @@
     font-size: 22px;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .rw-name,
-  .rw-excerpt,
-  .rw-arrow {
-    transition: none;
-  }
-}

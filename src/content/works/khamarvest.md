@@ -17,7 +17,7 @@ draft: false
 studioId: 2a5d6310-0d0f-457e-8eac-d3ba50cccd16
 ---
 
-Running a farm means keeping track of a lot at once — every animal, the feed and supplies in stock, and the money going in and out. On many farms all of that lives in notebooks, memory and scattered spreadsheets. KhamarVest brings it together in one simple dashboard, so a farmer can open a single page and see the state of the whole farm: which animals they have, what's running low, and whether the month is actually making money.
+Running a farm means keeping track of a lot at once: every animal, the feed and supplies in stock, and the money going in and out. On many farms all of that lives in notebooks, memory and scattered spreadsheets. KhamarVest brings it together in one simple dashboard, so a farmer can open a single page and see the state of the whole farm: which animals they have, what's running low, and whether the month is actually making money.
 
 ## What it does
 

@@ -23,6 +23,8 @@ export const GET = async () => {
     { path: "/works", lastModified: works[0]?.date },
     { path: "/blogs", lastModified: newestPost },
     { path: "/photobook", lastModified: moments[0] && `${moments[0].date}T12:00:00Z` },
+    // Velox's own website (static files in public/velox/).
+    { path: "/velox" },
     ...works.map((work) => ({ path: `/projects/${work.slug}`, lastModified: work.date })),
     ...posts.map((post) => ({ path: `/blogs/${post.slug}`, lastModified: post.updatedAt })),
     ...moments.map((moment) => ({

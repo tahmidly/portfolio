@@ -21,11 +21,11 @@ studioId: 24ceec9b-649f-4f89-a823-19e3fb2e3026
 
 ## The Problem
 
-Most small sellers in Bangladesh already run their business inside WhatsApp — that's where customers ask, bargain and order. But a chat thread isn't a shop: products get lost in old messages, prices have to be typed again and again, and every order needs to be pieced together by hand. Full e-commerce platforms feel like the opposite extreme — too heavy, too technical and built for a different kind of seller.
+Most small sellers in Bangladesh already run their business inside WhatsApp. That's where customers ask, bargain and order. But a chat thread isn't a shop: products get lost in old messages, prices have to be typed again and again, and every order needs to be pieced together by hand. Full e-commerce platforms feel like the opposite extreme. They are too heavy, too technical and built for a different kind of seller.
 
 ## The Solution
 
-Kommercly sits in between. It's a mobile-first store builder: a seller sets up a simple storefront from their phone, adds products, and shares one link. Customers browse a proper catalogue, and when they order, the order goes straight to the seller's WhatsApp — the place they already work. No new habits, just a cleaner way to sell.
+Kommercly sits in between. It's a mobile-first store builder: a seller sets up a simple storefront from their phone, adds products, and shares one link. Customers browse a proper catalogue, and when they order, the order goes straight to the seller's WhatsApp, the place they already work. No new habits, just a cleaner way to sell.
 
 ## What it does
 

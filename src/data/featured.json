@@ -1,8 +1,8 @@
 {
   "layout": "feature-left",
   "works": [
+    "velox",
     "kommercly",
-    "khamarvest",
-    "3dtostrip"
+    "khamarvest"
   ]
 }

@@ -258,11 +258,3 @@ a.fw-tag:hover {
     font-size: 24px;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .fw-name,
-  .fw-desc,
-  .fw-arrow svg {
-    transition: none;
-  }
-}

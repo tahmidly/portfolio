@@ -302,13 +302,6 @@
     display: none;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .post-nav-card,
-  .post-nav-card:hover {
-    transition: none;
-    transform: none;
-  }
-}
 
 /* Cropped covers keep their own ratio (set inline from stored dimensions),
    including on mobile where legacy covers switch to 4:3. */
